@@ -10,6 +10,16 @@ type Params = {
   refreshToken: string;
 };
 
+export const getAccessTokenCookieOptions = (): CookieOptions => ({
+  expires: fifteenMinutesFromNow(),
+});
+
+export const getRefreshTokenCookieOptions = (): CookieOptions => ({
+  expires: thirtyDaysFromNow(),
+  // path: REFRESH_PATH,
+  path: "/",
+});
+
 export const setAuthCookies = ({ res, accessToken, refreshToken }: Params) => {
   // Access token: bisa dibaca middleware FE
   res.cookie("accessToken", accessToken, {
