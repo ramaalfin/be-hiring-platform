@@ -3,12 +3,12 @@ import { NODE_ENV } from "../constants/env";
 import { fifteenMinutesFromNow, thirtyDaysFromNow } from "./date";
 
 export const REFRESH_PATH = "/api/v1/auth/refresh";
-const secure = NODE_ENV === "production";
+const isProduction = NODE_ENV === "production";
 
 const defaults: CookieOptions = {
   httpOnly: true,
-  secure: true,
-  sameSite: "none",
+  secure: isProduction, // kalau dev => false
+  sameSite: isProduction ? "none" : "lax", // kalau dev => lax
   maxAge: 15 * 60 * 1000,
 };
 

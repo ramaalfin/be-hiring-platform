@@ -59,6 +59,12 @@ export const verifyToken = <TPayload extends object = AccessTokenPayload>(
 };
 
 export const generateUserTokens = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+
+
   const session = await prisma.session.create({
     data: { userId, userAgent: "magic_link" },
   });
@@ -69,6 +75,7 @@ export const generateUserTokens = async (userId: string) => {
   const accessToken = signToken({
     ...sessionInfo,
     userId,
+    role: user?.role
   });
 
   return { accessToken, refreshToken };
