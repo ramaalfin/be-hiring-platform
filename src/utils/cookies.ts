@@ -5,13 +5,6 @@ import { fifteenMinutesFromNow, thirtyDaysFromNow } from "./date";
 export const REFRESH_PATH = "/api/v1/auth/refresh";
 const secure = NODE_ENV === "production";
 
-const defaults: CookieOptions = {
-  httpOnly: false, // ❌ ganti dari true → false agar bisa diakses JS frontend
-  secure,
-  sameSite: "none",
-  maxAge: 15 * 60 * 1000,
-};
-
 type Params = {
   res: Response;
   accessToken: string;
@@ -19,12 +12,10 @@ type Params = {
 };
 
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
-  ...defaults,
   expires: fifteenMinutesFromNow(),
 });
 
 export const getRefreshTokenCookieOptions = (): CookieOptions => ({
-  ...defaults,
   expires: thirtyDaysFromNow(),
   // path: REFRESH_PATH,
   path: "/",
