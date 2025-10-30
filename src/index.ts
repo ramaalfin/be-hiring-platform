@@ -16,12 +16,26 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+const allowedOrigins = [
+  "https://fe-hiring-platform.vercel.app",
+  "http://localhost:3000", // tetap tambahkan buat testing lokal
+];
+
 app.use(
   cors({
-    origin: APP_ORIGIN || "https://fe-hiring-platform.vercel.app",
+    origin: (origin, callback) => {
+      // kalau origin kosong (misal Postman), tetap izinkan
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.warn("❌ Blocked by CORS:", origin);
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     credentials: true,
   })
 );
+
 app.use(cookieParser());
 
 app.get("/", (req, res) => {
