@@ -25,20 +25,21 @@ export const getRefreshTokenCookieOptions = (): CookieOptions => ({
 export const setAuthCookies = ({ res, accessToken, refreshToken }: Params) => {
   // Access token: bisa dibaca middleware FE
   res.cookie("accessToken", accessToken, {
-    expires: fifteenMinutesFromNow(),
+    httpOnly: false,
+    secure: true,
+    sameSite: "none",
     path: "/",
-    httpOnly: false, // ❗ tidak httpOnly agar middleware bisa baca
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    domain: ".vercel.app", // ⬅️ ini yang belum kamu tambahkan
+    expires: fifteenMinutesFromNow(),
   });
 
-  // Refresh token: tetap aman, hanya backend yang bisa baca
   res.cookie("refreshToken", refreshToken, {
-    expires: thirtyDaysFromNow(),
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
     path: "/",
-    httpOnly: true, // ⬅️ hanya backend bisa baca
-    secure: isProduction,
-    sameSite: isProduction ? "none" : "lax",
+    domain: ".vercel.app", // ⬅️ tambahkan juga di sini
+    expires: thirtyDaysFromNow(),
   });
 };
 
