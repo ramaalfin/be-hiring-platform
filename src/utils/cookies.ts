@@ -2,16 +2,13 @@ import { CookieOptions, Response } from "express";
 import { NODE_ENV } from "../constants/env";
 import { fifteenMinutesFromNow, thirtyDaysFromNow } from "./date";
 
-export const REFRESH_PATH = "/api/v1/auth/refresh";
-const isProduction = NODE_ENV === "production" || process.env.APP_ORIGIN?.startsWith("https");
+const secure = NODE_ENV === "production";
 
 const defaults: CookieOptions = {
-  httpOnly: true,
-  secure: true, // kalau dev => false
-  sameSite: "none", // kalau dev => lax
+  httpOnly: false, // ❌ ganti dari true → false agar bisa diakses JS frontend
+  secure,
+  sameSite: "none",
   maxAge: 15 * 60 * 1000,
-  domain: isProduction ? ".vercel.app" : undefined,
-  path: "/"
 };
 
 type Params = {
@@ -28,7 +25,6 @@ export const getAccessTokenCookieOptions = (): CookieOptions => ({
 export const getRefreshTokenCookieOptions = (): CookieOptions => ({
   ...defaults,
   expires: thirtyDaysFromNow(),
-  // path: REFRESH_PATH,
   path: "/",
 });
 
