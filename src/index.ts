@@ -18,7 +18,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(
   cors({
-    origin: APP_ORIGIN,
+    origin: APP_ORIGIN || "https://fe-hiring-platform.vercel.app",
     credentials: true,
   })
 );

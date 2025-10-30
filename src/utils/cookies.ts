@@ -10,6 +10,7 @@ const defaults: CookieOptions = {
   secure: isProduction, // kalau dev => false
   sameSite: isProduction ? "none" : "lax", // kalau dev => lax
   maxAge: 15 * 60 * 1000,
+  path: "/"
 };
 
 type Params = {
