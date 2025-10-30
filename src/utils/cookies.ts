@@ -29,7 +29,6 @@ export const setAuthCookies = ({ res, accessToken, refreshToken }: Params) => {
     secure: true,
     sameSite: "none",
     path: "/",
-    domain: ".vercel.app", // ⬅️ ini yang belum kamu tambahkan
     expires: fifteenMinutesFromNow(),
   });
 
@@ -38,7 +37,6 @@ export const setAuthCookies = ({ res, accessToken, refreshToken }: Params) => {
     secure: true,
     sameSite: "none",
     path: "/",
-    domain: ".vercel.app", // ⬅️ tambahkan juga di sini
     expires: thirtyDaysFromNow(),
   });
 };
