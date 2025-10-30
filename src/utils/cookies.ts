@@ -10,6 +10,8 @@ type Params = {
   refreshToken: string;
 };
 
+export const REFRESH_PATH = "/api/v1/auth/refresh";
+
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
   expires: fifteenMinutesFromNow(),
 });
