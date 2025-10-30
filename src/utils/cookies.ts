@@ -10,7 +10,8 @@ const defaults: CookieOptions = {
   secure: true, // kalau dev => false
   sameSite: "none", // kalau dev => lax
   maxAge: 15 * 60 * 1000,
-  domain: isProduction ? ".vercel.app" : undefined
+  domain: isProduction ? ".vercel.app" : undefined,
+  path: "/"
 };
 
 type Params = {
