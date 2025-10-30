@@ -7,10 +7,10 @@ const isProduction = NODE_ENV === "production" || process.env.APP_ORIGIN?.starts
 
 const defaults: CookieOptions = {
   httpOnly: true,
-  secure: isProduction, // kalau dev => false
-  sameSite: isProduction ? "none" : "lax", // kalau dev => lax
+  secure: true, // kalau dev => false
+  sameSite: "none", // kalau dev => lax
   maxAge: 15 * 60 * 1000,
-  path: "/"
+  domain: isProduction ? ".vercel.app" : undefined
 };
 
 type Params = {
