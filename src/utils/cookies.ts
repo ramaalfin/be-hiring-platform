@@ -3,7 +3,7 @@ import { NODE_ENV } from "../constants/env";
 import { fifteenMinutesFromNow, thirtyDaysFromNow } from "./date";
 
 export const REFRESH_PATH = "/api/v1/auth/refresh";
-const isProduction = NODE_ENV === "production";
+const isProduction = NODE_ENV === "production" || process.env.APP_ORIGIN?.startsWith("https");
 
 const defaults: CookieOptions = {
   httpOnly: true,
