@@ -2,8 +2,7 @@ import { CookieOptions, Response } from "express";
 import { NODE_ENV } from "../constants/env";
 import { fifteenMinutesFromNow, thirtyDaysFromNow } from "./date";
 
-export const REFRESH_PATH = "/api/v1/auth/refresh";
-const secure = NODE_ENV === "production";
+const isProduction = NODE_ENV === "production";
 
 type Params = {
   res: Response;
@@ -11,22 +10,27 @@ type Params = {
   refreshToken: string;
 };
 
-export const getAccessTokenCookieOptions = (): CookieOptions => ({
-  expires: fifteenMinutesFromNow(),
-});
-
-export const getRefreshTokenCookieOptions = (): CookieOptions => ({
-  expires: thirtyDaysFromNow(),
-  // path: REFRESH_PATH,
-  path: "/",
-});
-
 export const setAuthCookies = ({ res, accessToken, refreshToken }: Params) => {
-  res.cookie("accessToken", accessToken, getAccessTokenCookieOptions());
-  res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
+  // Access token: bisa dibaca middleware FE
+  res.cookie("accessToken", accessToken, {
+    expires: fifteenMinutesFromNow(),
+    path: "/",
+    httpOnly: false, // ❗ tidak httpOnly agar middleware bisa baca
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+  });
+
+  // Refresh token: tetap aman, hanya backend yang bisa baca
+  res.cookie("refreshToken", refreshToken, {
+    expires: thirtyDaysFromNow(),
+    path: "/",
+    httpOnly: true, // ⬅️ hanya backend bisa baca
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+  });
 };
 
 export const clearAuthCookies = (res: Response) => {
-  res.clearCookie("accessToken");
-  res.clearCookie("refreshToken");
+  res.clearCookie("accessToken", { path: "/" });
+  res.clearCookie("refreshToken", { path: "/" });
 };

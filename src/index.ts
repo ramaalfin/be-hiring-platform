@@ -19,7 +19,10 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
-    origin: "https://fe-hiring-platform.vercel.app",
+    origin: [
+      "http://localhost:3000",
+      "https://fe-hiring-platform.vercel.app",
+    ],
     credentials: true, // wajib!
   })
 );
