@@ -51,7 +51,6 @@ export const registerController = catchErrors(async (req, res) => {
   });
 });
 
-
 export const loginController = catchErrors(async (req, res) => {
   const data = loginSchema.parse({
     email: req.body.email,
@@ -71,6 +70,8 @@ export const loginController = catchErrors(async (req, res) => {
       fullName: user.fullName,
       role: user.role,
     },
+    accessToken,
+    refreshToken,
   });
 });
 
@@ -86,7 +87,11 @@ export const verifyMagicLoginController = catchErrors(async (req, res) => {
 
   // Set cookie di sini
   res.cookie("accessToken", tokens.accessToken, getAccessTokenCookieOptions());
-  res.cookie("refreshToken", tokens.refreshToken, getRefreshTokenCookieOptions());
+  res.cookie(
+    "refreshToken",
+    tokens.refreshToken,
+    getRefreshTokenCookieOptions()
+  );
 
   return res.status(200).json({
     message: "Magic login successful",
@@ -105,14 +110,17 @@ export const verifyMagicRegisterController = catchErrors(async (req, res) => {
   const tokens = await verifyMagicRegisterService(code);
 
   res.cookie("accessToken", tokens.accessToken, getAccessTokenCookieOptions());
-  res.cookie("refreshToken", tokens.refreshToken, getRefreshTokenCookieOptions());
+  res.cookie(
+    "refreshToken",
+    tokens.refreshToken,
+    getRefreshTokenCookieOptions()
+  );
 
   return res.status(200).json({
     message: "Magic registration successful",
     user: tokens.user,
   });
 });
-
 
 export const logoutController = catchErrors(async (req, res) => {
   const accessToken = req.cookies.accessToken;

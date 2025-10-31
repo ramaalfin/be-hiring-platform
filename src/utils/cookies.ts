@@ -14,11 +14,17 @@ export const REFRESH_PATH = "/api/v1/auth/refresh";
 
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
   expires: fifteenMinutesFromNow(),
+  httpOnly: false, // agar bisa dibaca FE
+  sameSite: "none", // penting untuk cross-domain
+  secure: true, // wajib di production
+  path: "/", // pastikan tersedia di semua route
 });
 
 export const getRefreshTokenCookieOptions = (): CookieOptions => ({
   expires: thirtyDaysFromNow(),
-  // path: REFRESH_PATH,
+  httpOnly: false,
+  sameSite: "none",
+  secure: true,
   path: "/",
 });
 
