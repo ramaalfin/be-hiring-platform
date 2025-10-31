@@ -25,17 +25,10 @@ export const getRefreshTokenCookieOptions = (): CookieOptions => ({
 export const setAuthCookies = ({ res, accessToken, refreshToken }: Params) => {
   // Access token: bisa dibaca middleware FE
   res.cookie("accessToken", accessToken, {
-    httpOnly: false,
-    secure: true,
-    sameSite: "none",
-    path: "/",
     expires: fifteenMinutesFromNow(),
   });
 
   res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "none",
     path: "/",
     expires: thirtyDaysFromNow(),
   });
