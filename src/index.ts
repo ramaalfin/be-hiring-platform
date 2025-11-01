@@ -21,7 +21,6 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://fe-hiring-platform.vercel.app",
     ],
     credentials: true, // wajib!
   })
