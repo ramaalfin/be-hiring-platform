@@ -11,6 +11,7 @@ export const getAccessTokenCookieOptions = (): CookieOptions => ({
   sameSite: "none",         // penting untuk cross-domain
   expires: fifteenMinutesFromNow(),
   path: "/",
+  domain: "localhost"
 })
 
 export const getRefreshTokenCookieOptions = (): CookieOptions => ({
@@ -19,6 +20,7 @@ export const getRefreshTokenCookieOptions = (): CookieOptions => ({
   sameSite: "none",
   expires: thirtyDaysFromNow(),
   path: "/",
+  domain: "localhost"
 })
 
 export const setAuthCookies = (res: Response, access_token: string, refresh_token: string) => {
