@@ -17,7 +17,6 @@ export const getAccessTokenCookieOptions = (): CookieOptions => ({
   path: "/",
   httpOnly: false, // 🔥 ubah: agar bisa dibaca frontend
   secure: isProduction, // hanya pakai secure di production
-  sameSite: "lax", // biar kompatibel antar domain
 });
 
 export const getRefreshTokenCookieOptions = (): CookieOptions => ({
@@ -25,7 +24,6 @@ export const getRefreshTokenCookieOptions = (): CookieOptions => ({
   path: "/",
   httpOnly: false, // 🔥 ubah juga
   secure: isProduction,
-  sameSite: "lax",
 });
 
 
