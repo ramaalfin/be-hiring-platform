@@ -14,27 +14,27 @@ export const REFRESH_PATH = "/api/v1/auth/refresh";
 
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
   expires: fifteenMinutesFromNow(),
-  httpOnly: false, // agar bisa dibaca FE
-  sameSite: "none", // penting untuk cross-domain
-  secure: true, // wajib di production
-  path: "/", // pastikan tersedia di semua route
+  path: "/",
+  httpOnly: false, // 🔥 ubah: agar bisa dibaca frontend
+  secure: isProduction, // hanya pakai secure di production
+  sameSite: "lax", // biar kompatibel antar domain
 });
 
 export const getRefreshTokenCookieOptions = (): CookieOptions => ({
   expires: thirtyDaysFromNow(),
-  httpOnly: false,
-  sameSite: "none",
-  secure: true,
   path: "/",
+  httpOnly: false, // 🔥 ubah juga
+  secure: isProduction,
+  sameSite: "lax",
 });
 
+
 export const setAuthCookies = ({ res, accessToken, refreshToken }: Params) => {
-  // Access token: bisa dibaca middleware FE
-  res.cookie("accessToken", accessToken, getAccessTokenCookieOptions());
-  res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
+  res.cookie("access_token", accessToken, getAccessTokenCookieOptions());
+  res.cookie("refresh_token", refreshToken, getRefreshTokenCookieOptions());
 };
 
 export const clearAuthCookies = (res: Response) => {
-  res.clearCookie("accessToken", { path: "/" });
-  res.clearCookie("refreshToken", { path: "/" });
+  res.clearCookie("access_token", { path: "/" });
+  res.clearCookie("refresh_token", { path: "/" });
 };
