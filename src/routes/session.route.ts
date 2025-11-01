@@ -4,12 +4,11 @@ import {
   getAllSessionController,
   getSessionController,
 } from "../controllers/session.controller";
-import authenticate from "../middleware/authenticate";
 
 const sessionRoutes = Router();
 
-sessionRoutes.get("/all", authenticate, getAllSessionController);
-sessionRoutes.get("/", authenticate, getSessionController);
-sessionRoutes.delete("/:id", authenticate, deleteSessionController);
+sessionRoutes.get("/all", getAllSessionController);
+sessionRoutes.get("/", getSessionController);
+sessionRoutes.delete("/:id", deleteSessionController);
 
 export default sessionRoutes;
