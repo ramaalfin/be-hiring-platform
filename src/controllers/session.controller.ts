@@ -30,9 +30,6 @@ export const getAllSessionController = catchErrors(async (req, res) => {
 export const getSessionController = catchErrors(async (req, res) => {
   const sessionId = req?.sessionId;
 
-  console.log("sessionId", sessionId);
-
-
   appAssert(sessionId, NOT_FOUND, "Session not found");
 
   const session = await prisma.session.findUnique({
