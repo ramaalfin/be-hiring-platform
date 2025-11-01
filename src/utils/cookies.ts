@@ -6,21 +6,19 @@ export const REFRESH_PATH = "/api/v1/auth/refresh";
 const isProduction = process.env.NODE_ENV === "production";
 
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
-  httpOnly: false,          // kalau mau dicek di browser
-  secure: isProduction || false,     // true kalau di https
-  sameSite: "none",         // penting untuk cross-domain
-  expires: fifteenMinutesFromNow(),
-  path: "/",
-  domain: "localhost"
+  httpOnly: false,          // sementara biar keliatan di browser
+  secure: true,             // karena vercel pakai HTTPS
+  sameSite: "none",         // wajib biar cross-domain bisa
+  path: "/",                // selalu /
+  maxAge: 15 * 60 * 1000,
 })
 
 export const getRefreshTokenCookieOptions = (): CookieOptions => ({
   httpOnly: false,
-  secure: isProduction || false,
+  secure: true,
   sameSite: "none",
-  expires: thirtyDaysFromNow(),
+  maxAge: 30 * 24 * 60 * 60 * 1000,
   path: "/",
-  domain: "localhost"
 })
 
 export const setAuthCookies = (res: Response, access_token: string, refresh_token: string) => {
