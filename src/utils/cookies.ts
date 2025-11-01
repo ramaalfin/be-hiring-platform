@@ -4,8 +4,6 @@ import { fifteenMinutesFromNow, thirtyDaysFromNow } from "./date";
 
 export const REFRESH_PATH = "/api/v1/auth/refresh";
 
-const isProduction = NODE_ENV === "production";
-
 const getCookieDomain = (req: any): string | undefined => {
   const origin = req.headers.origin;
   if (!origin) return undefined;
@@ -28,27 +26,23 @@ const getCookieDomain = (req: any): string | undefined => {
   }
 };
 
-
-
 export const getAccessTokenCookieOptions = (domain?: string): CookieOptions => ({
   expires: fifteenMinutesFromNow(),
   path: "/",
   httpOnly: false,
-  secure: isProduction,     // wajib true di production
+  secure: NODE_ENV === "production",
   sameSite: "none",
-  domain,                   // tambahkan domain di sini
+  domain,
 });
 
 export const getRefreshTokenCookieOptions = (domain?: string): CookieOptions => ({
   expires: thirtyDaysFromNow(),
   path: "/",
   httpOnly: false,
-  secure: isProduction,
+  secure: NODE_ENV === "production",
   sameSite: "none",
   domain,
 });
-
-
 
 export const setAuthCookies = ({
   req,
@@ -61,11 +55,12 @@ export const setAuthCookies = ({
   access_token: string;
   refresh_token: string;
 }) => {
-  const domain = getCookieDomain(req);
+  // hanya pakai domain saat production (Vercel)
+  const domain = NODE_ENV === "production" ? getCookieDomain(req) : undefined;
+
   res.cookie("access_token", access_token, getAccessTokenCookieOptions(domain));
   res.cookie("refresh_token", refresh_token, getRefreshTokenCookieOptions(domain));
 };
-
 
 export const clearAuthCookies = (res: Response) => {
   res.clearCookie("access_token", { path: "/" });
