@@ -14,9 +14,6 @@ import applicationsRoutes from "./routes/applicant.route";
 
 const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-
 app.use(
   cors({
     origin: ["http://localhost:3000", "https://fe-hiring-platform.vercel.app"],
@@ -24,8 +21,10 @@ app.use(
   })
 );
 
-
+// ✅ 2. baru pasang cookie-parser dan express body parser
 app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
