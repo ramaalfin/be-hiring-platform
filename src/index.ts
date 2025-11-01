@@ -19,10 +19,13 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   cors({
-    origin: APP_ORIGIN,
+    origin: [
+      "http://localhost:3000",
+    ],
     credentials: true, // wajib!
   })
 );
+
 
 app.use(cookieParser());
 
