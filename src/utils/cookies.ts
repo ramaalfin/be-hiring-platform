@@ -1,68 +1,33 @@
 import { CookieOptions, Response } from "express";
-import { NODE_ENV } from "../constants/env";
 import { fifteenMinutesFromNow, thirtyDaysFromNow } from "./date";
 
 export const REFRESH_PATH = "/api/v1/auth/refresh";
 
-const getCookieDomain = (req: any): string | undefined => {
-  const origin = req.headers.origin;
-  if (!origin) return undefined;
+const isProduction = process.env.NODE_ENV === "production";
 
-  try {
-    const url = new URL(origin);
-    const hostname = url.hostname;
-
-    // 👇 jangan set domain kalau FE masih di localhost
-    if (hostname.includes("localhost")) return undefined;
-
-    // kalau production FE di vercel, arahkan ke domain FE
-    if (hostname.includes("vercel.app")) {
-      return "fe-hiring-platform.vercel.app";
-    }
-
-    return hostname;
-  } catch {
-    return undefined;
-  }
-};
-
-export const getAccessTokenCookieOptions = (domain?: string): CookieOptions => ({
+export const getAccessTokenCookieOptions = (): CookieOptions => ({
+  httpOnly: false,          // kalau mau dicek di browser
+  secure: isProduction || false,     // true kalau di https
+  sameSite: "none",         // penting untuk cross-domain
   expires: fifteenMinutesFromNow(),
   path: "/",
-  httpOnly: false,
-  secure: NODE_ENV === "production",
-  sameSite: "none",
-  domain,
-});
+})
 
-export const getRefreshTokenCookieOptions = (domain?: string): CookieOptions => ({
+export const getRefreshTokenCookieOptions = (): CookieOptions => ({
+  httpOnly: false,
+  secure: isProduction || false,
+  sameSite: "none",
   expires: thirtyDaysFromNow(),
   path: "/",
-  httpOnly: false,
-  secure: NODE_ENV === "production",
-  sameSite: "none",
-  domain,
-});
+})
 
-export const setAuthCookies = ({
-  req,
-  res,
-  access_token,
-  refresh_token,
-}: {
-  req: any;
-  res: Response;
-  access_token: string;
-  refresh_token: string;
-}) => {
-  // hanya pakai domain saat production (Vercel)
-  const domain = NODE_ENV === "production" ? getCookieDomain(req) : undefined;
-
-  res.cookie("access_token", access_token, getAccessTokenCookieOptions(domain));
-  res.cookie("refresh_token", refresh_token, getRefreshTokenCookieOptions(domain));
+export const setAuthCookies = (res: Response, access_token: string, refresh_token: string) => {
+  res.cookie("access_token", access_token, getAccessTokenCookieOptions());
+  res.cookie("refresh_token", refresh_token, getRefreshTokenCookieOptions());
 };
 
 export const clearAuthCookies = (res: Response) => {
   res.clearCookie("access_token", { path: "/" });
   res.clearCookie("refresh_token", { path: "/" });
 };
+
