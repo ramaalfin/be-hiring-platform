@@ -21,12 +21,12 @@ const defaults: SignOptions = {
   audience: ["user"],
 };
 
-const accessTokenSignOptions: SignOptionsAndSecret = {
+const access_tokenSignOptions: SignOptionsAndSecret = {
   expiresIn: "2m",
   secret: JWT_SECRET,
 };
 
-export const refreshTokenSignOptions: SignOptionsAndSecret = {
+export const refresh_tokenSignOptions: SignOptionsAndSecret = {
   expiresIn: "1w",
   secret: JWT_REFRESH_SECRET,
 };
@@ -35,7 +35,7 @@ export const signToken = (
   payload: AccessTokenPayload | RefreshTokenPayload,
   options?: SignOptionsAndSecret
 ) => {
-  const { secret, ...signOpts } = options || accessTokenSignOptions;
+  const { secret, ...signOpts } = options || access_tokenSignOptions;
   return jwt.sign(payload, secret, { ...defaults, ...signOpts });
 };
 
@@ -71,12 +71,12 @@ export const generateUserTokens = async (userId: string) => {
 
   const sessionInfo = { sessionId: session.id };
 
-  const refreshToken = signToken(sessionInfo, refreshTokenSignOptions);
-  const accessToken = signToken({
+  const refresh_token = signToken(sessionInfo, refresh_tokenSignOptions);
+  const access_token = signToken({
     ...sessionInfo,
     userId,
     role: user?.role
   });
 
-  return { accessToken, refreshToken };
+  return { access_token, refresh_token };
 };

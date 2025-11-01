@@ -36,9 +36,9 @@ export const registerController = catchErrors(async (req, res) => {
     userAgent: req.headers["user-agent"],
   });
 
-  const { user, accessToken, refreshToken } = await createAccount(request);
+  const { user, access_token, refresh_token } = await createAccount(request);
 
-  setAuthCookies({ res, accessToken, refreshToken });
+  setAuthCookies({ res, access_token, refresh_token });
 
   return res.status(CREATED).json({
     message: "Account created successfully",
@@ -58,9 +58,9 @@ export const loginController = catchErrors(async (req, res) => {
     userAgent: req.headers["user-agent"],
   });
 
-  const { accessToken, refreshToken, user } = await loginUser(data);
+  const { access_token, refresh_token, user } = await loginUser(data);
 
-  setAuthCookies({ res, accessToken, refreshToken });
+  setAuthCookies({ res, access_token, refresh_token });
 
   return res.status(OK).json({
     message: "Login successful",
@@ -84,8 +84,8 @@ export const verifyMagicLoginController = catchErrors(async (req, res) => {
   const tokens = await verifyMagicLoginService(code);
 
   // Set cookie di sini
-  res.cookie("accessToken", tokens.accessToken, getAccessTokenCookieOptions());
-  res.cookie("refreshToken", tokens.refreshToken, getRefreshTokenCookieOptions());
+  res.cookie("access_token", tokens.access_token, getAccessTokenCookieOptions());
+  res.cookie("refresh_token", tokens.refresh_token, getRefreshTokenCookieOptions());
 
   return res.status(200).json({
     message: "Magic login successful",
@@ -103,8 +103,8 @@ export const verifyMagicRegisterController = catchErrors(async (req, res) => {
   const code = verificationCodeSchema.parse(req.query.code);
   const tokens = await verifyMagicRegisterService(code);
 
-  res.cookie("accessToken", tokens.accessToken, getAccessTokenCookieOptions());
-  res.cookie("refreshToken", tokens.refreshToken, getRefreshTokenCookieOptions());
+  res.cookie("access_token", tokens.access_token, getAccessTokenCookieOptions());
+  res.cookie("refresh_token", tokens.refresh_token, getRefreshTokenCookieOptions());
 
   return res.status(200).json({
     message: "Magic registration successful",
@@ -114,8 +114,8 @@ export const verifyMagicRegisterController = catchErrors(async (req, res) => {
 
 
 export const logoutController = catchErrors(async (req, res) => {
-  const accessToken = req.cookies.accessToken;
-  const { payload } = verifyToken(accessToken);
+  const access_token = req.cookies.access_token;
+  const { payload } = verifyToken(access_token);
 
   if (payload) {
     await prisma.session.deleteMany({
@@ -133,21 +133,21 @@ export const logoutController = catchErrors(async (req, res) => {
 });
 
 export const refreshController = catchErrors(async (req, res) => {
-  const refreshToken = req.cookies.refreshToken as string | undefined;
+  const refresh_token = req.cookies.refresh_token as string | undefined;
 
-  appAssert(refreshToken, UNAUTHORIZED, "Missing refresh token");
+  appAssert(refresh_token, UNAUTHORIZED, "Missing refresh token");
 
-  const { accessToken, newRefreshToken } = await refreshUserAccessToken(
-    refreshToken
+  const { access_token, newRefreshToken } = await refreshUserAccessToken(
+    refresh_token
   );
 
   if (newRefreshToken) {
-    res.cookie("refreshToken", newRefreshToken, getRefreshTokenCookieOptions());
+    res.cookie("refresh_token", newRefreshToken, getRefreshTokenCookieOptions());
   }
 
   return res
     .status(OK)
-    .cookie("accessToken", accessToken, getAccessTokenCookieOptions())
+    .cookie("access_token", access_token, getAccessTokenCookieOptions())
     .json({
       message: "Access Token refreshed",
     });

@@ -6,8 +6,8 @@ const isProduction = NODE_ENV === "production";
 
 type Params = {
   res: Response;
-  accessToken: string;
-  refreshToken: string;
+  access_token: string;
+  refresh_token: string;
 };
 
 export const REFRESH_PATH = "/api/v1/auth/refresh";
@@ -29,12 +29,12 @@ export const getRefreshTokenCookieOptions = (): CookieOptions => ({
 });
 
 
-export const setAuthCookies = ({ res, accessToken, refreshToken }: Params) => {
-  res.cookie("accessToken", accessToken, getAccessTokenCookieOptions());
-  res.cookie("refreshToken", refreshToken, getRefreshTokenCookieOptions());
+export const setAuthCookies = ({ res, access_token, refresh_token }: Params) => {
+  res.cookie("access_token", access_token, getAccessTokenCookieOptions());
+  res.cookie("refresh_token", refresh_token, getRefreshTokenCookieOptions());
 };
 
 export const clearAuthCookies = (res: Response) => {
-  res.clearCookie("accessToken", { path: "/" });
-  res.clearCookie("refreshToken", { path: "/" });
+  res.clearCookie("access_token", { path: "/" });
+  res.clearCookie("refresh_token", { path: "/" });
 };

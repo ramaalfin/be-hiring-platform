@@ -15,7 +15,7 @@ import {
   TOO_MANY_REQUESTS,
   UNAUTHORIZED,
 } from "../constants/http";
-import { refreshTokenSignOptions, signToken, verifyToken } from "../utils/jwt";
+import { refresh_tokenSignOptions, signToken, verifyToken } from "../utils/jwt";
 import {
   sendVerificationEmail,
   sendForgotPasswordEmail,
@@ -86,19 +86,19 @@ export const createAccount = async (data: CreateAccountData) => {
     },
   });
 
-  const refreshToken = signToken(
+  const refresh_token = signToken(
     { sessionId: session.id },
-    refreshTokenSignOptions
+    refresh_tokenSignOptions
   );
 
-  const accessToken = signToken({
+  const access_token = signToken({
     sessionId: session.id,
     userId: user.id,
     role: user.role,
   });
 
   const { password: _, ...userWithoutPassword } = user;
-  return { user: userWithoutPassword, accessToken, refreshToken };
+  return { user: userWithoutPassword, access_token, refresh_token };
 };
 
 export const loginUser = async ({
@@ -126,20 +126,20 @@ export const loginUser = async ({
     sessionId: session.id,
   };
 
-  const refreshToken = signToken(sessionInfo, refreshTokenSignOptions);
+  const refresh_token = signToken(sessionInfo, refresh_tokenSignOptions);
 
-  const accessToken = signToken({
+  const access_token = signToken({
     ...sessionInfo,
     userId,
     role: user.role,
   });
 
-  return { user, refreshToken, accessToken };
+  return { user, refresh_token, access_token };
 };
 
-export const refreshUserAccessToken = async (refreshToken: string) => {
-  const { payload } = verifyToken(refreshToken, {
-    secret: refreshTokenSignOptions.secret,
+export const refreshUserAccessToken = async (refresh_token: string) => {
+  const { payload } = verifyToken(refresh_token, {
+    secret: refresh_tokenSignOptions.secret,
   });
 
   appAssert(payload, UNAUTHORIZED, "Invalid refresh token");
@@ -167,17 +167,17 @@ export const refreshUserAccessToken = async (refreshToken: string) => {
   }
 
   const newRefreshToken = sessionNeedRefresh
-    ? signToken({ sessionId: session.id }, refreshTokenSignOptions)
+    ? signToken({ sessionId: session.id }, refresh_tokenSignOptions)
     : undefined;
 
   // ✅ Gunakan role dari database
-  const accessToken = signToken({
+  const access_token = signToken({
     sessionId: session.id,
     userId: session.userId,
     role: user.role,
   });
 
-  return { accessToken, newRefreshToken };
+  return { access_token, newRefreshToken };
 };
 
 
@@ -325,15 +325,15 @@ export const verifyMagicLoginService = async (code: string) => {
   });
 
   const sessionInfo = { sessionId: session.id };
-  const refreshToken = signToken(sessionInfo, refreshTokenSignOptions);
-  const accessToken = signToken({
+  const refresh_token = signToken(sessionInfo, refresh_tokenSignOptions);
+  const access_token = signToken({
     ...sessionInfo,
     userId: user.id,
     role: user.role,
   });
 
   const { password: _, ...userWithoutPassword } = user;
-  return { accessToken, refreshToken, user: userWithoutPassword };
+  return { access_token, refresh_token, user: userWithoutPassword };
 };
 
 export const sendMagicRegisterService = async (email: string) => {
@@ -389,8 +389,8 @@ export const verifyMagicRegisterService = async (code: string) => {
   });
 
   const sessionInfo = { sessionId: session.id };
-  const refreshToken = signToken(sessionInfo, refreshTokenSignOptions);
-  const accessToken = signToken({
+  const refresh_token = signToken(sessionInfo, refresh_tokenSignOptions);
+  const access_token = signToken({
     ...sessionInfo,
     userId: user.id,
     role: user.role,
@@ -398,5 +398,5 @@ export const verifyMagicRegisterService = async (code: string) => {
 
   const { password: _, ...userWithoutPassword } = user;
 
-  return { accessToken, refreshToken, user: userWithoutPassword };
+  return { access_token, refresh_token, user: userWithoutPassword };
 };

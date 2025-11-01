@@ -6,15 +6,15 @@ import { verifyToken } from "../utils/jwt";
 
 // wrap with catchErrors() if you need this to be async
 const authenticate: RequestHandler = (req, res, next) => {
-  const accessToken = req.cookies.accessToken as string | undefined;
+  const access_token = req.cookies.access_token as string | undefined;
   appAssert(
-    accessToken,
+    access_token,
     UNAUTHORIZED,
     "Not authorized",
     AppErrorCode.InvalidAccessToken
   );
 
-  const { error, payload } = verifyToken(accessToken);
+  const { error, payload } = verifyToken(access_token);
   appAssert(
     payload,
     UNAUTHORIZED,
