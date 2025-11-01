@@ -35,10 +35,10 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1/auth", authRoutes);
-app.use("/api/v1/user", authenticate, userRoutes);
-app.use("/api/v1/sessions", authenticate, sessionRoutes);
-app.use("/api/v1/jobs", authenticate, jobsRoutes);
-app.use("/api/v1/applications", authenticate, applicationsRoutes);
+app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/sessions", sessionRoutes);
+app.use("/api/v1/jobs", jobsRoutes);
+app.use("/api/v1/applications", applicationsRoutes);
 
 app.use(errorHandler);
 

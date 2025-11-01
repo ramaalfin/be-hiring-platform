@@ -8,13 +8,13 @@ type AsyncController = (
 
 const catchErrors =
   (controller: AsyncController): AsyncController =>
-  async (req, res, next) => {
-    try {
-      await controller(req, res, next);
-    } catch (error) {
-      // pass error on
-      next(error);
-    }
-  };
+    async (req, res, next) => {
+      try {
+        await controller(req, res, next);
+      } catch (error) {
+        // pass error on
+        next(error);
+      }
+    };
 
 export default catchErrors;
