@@ -6,14 +6,13 @@ export const REFRESH_PATH = "/api/v1/auth/refresh";
 
 const isProduction = NODE_ENV === "production";
 
-export const getCookieDomain = (req: any): string | undefined => {
-  // jika localhost, tidak perlu set domain
+const getCookieDomain = (req: any): string | undefined => {
   const origin = req.headers.origin;
   if (!origin) return undefined;
 
   try {
     const url = new URL(origin);
-    // hanya ambil domain FE
+    // jika FE di localhost, jangan set domain (biar Chrome tidak menolak)
     if (url.hostname.includes("localhost")) return undefined;
     return url.hostname;
   } catch {
@@ -21,13 +20,14 @@ export const getCookieDomain = (req: any): string | undefined => {
   }
 };
 
+
 export const getAccessTokenCookieOptions = (domain?: string): CookieOptions => ({
   expires: fifteenMinutesFromNow(),
   path: "/",
   httpOnly: false,
-  secure: isProduction,
-  sameSite: "none", // penting agar cookie bisa dikirim antar domain
-  domain,
+  secure: isProduction,     // wajib true di production
+  sameSite: "none",
+  domain,                   // tambahkan domain di sini
 });
 
 export const getRefreshTokenCookieOptions = (domain?: string): CookieOptions => ({
@@ -39,22 +39,24 @@ export const getRefreshTokenCookieOptions = (domain?: string): CookieOptions => 
   domain,
 });
 
+
+
 export const setAuthCookies = ({
-  res,
   req,
+  res,
   access_token,
   refresh_token,
 }: {
-  res: Response;
   req: any;
+  res: Response;
   access_token: string;
   refresh_token: string;
 }) => {
   const domain = getCookieDomain(req);
-
   res.cookie("access_token", access_token, getAccessTokenCookieOptions(domain));
   res.cookie("refresh_token", refresh_token, getRefreshTokenCookieOptions(domain));
 };
+
 
 export const clearAuthCookies = (res: Response) => {
   res.clearCookie("access_token", { path: "/" });
