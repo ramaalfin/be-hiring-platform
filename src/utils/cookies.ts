@@ -12,13 +12,22 @@ const getCookieDomain = (req: any): string | undefined => {
 
   try {
     const url = new URL(origin);
-    // jika FE di localhost, jangan set domain (biar Chrome tidak menolak)
-    if (url.hostname.includes("localhost")) return undefined;
-    return url.hostname;
+    const hostname = url.hostname;
+
+    // 👇 jangan set domain kalau FE masih di localhost
+    if (hostname.includes("localhost")) return undefined;
+
+    // kalau production FE di vercel, arahkan ke domain FE
+    if (hostname.includes("vercel.app")) {
+      return "fe-hiring-platform.vercel.app";
+    }
+
+    return hostname;
   } catch {
     return undefined;
   }
 };
+
 
 
 export const getAccessTokenCookieOptions = (domain?: string): CookieOptions => ({
