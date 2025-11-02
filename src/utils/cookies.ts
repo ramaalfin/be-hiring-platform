@@ -9,9 +9,9 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const defaults: CookieOptions = {
   httpOnly: true,
-  secure: false,
-  sameSite: "lax",
-  path: "/",
+  secure: isProduction,
+  sameSite: isProduction ? "none" : "lax",
+  path: "/"
 };
 
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
