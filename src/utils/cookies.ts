@@ -4,14 +4,13 @@ import { fifteenMinutesFromNow, thirtyDaysFromNow } from "./date";
 
 export const REFRESH_PATH = "/api/v1/auth/refresh";
 
-// Use NODE_ENV to decide production vs dev.
-// On Vercel NODE_ENV is "production".
+// Gunakan NODE_ENV atau cek origin
 const isProduction = process.env.NODE_ENV === "production";
 
 const defaults: CookieOptions = {
   httpOnly: true,
-  secure: isProduction,              // ✅ true in production (Vercel)
-  sameSite: isProduction ? "none" : "lax", // ✅ cross-site allowed in production
+  secure: isProduction,                // ✅ hanya true di production
+  sameSite: isProduction ? "none" : "lax", // ✅ Lax di dev, None di prod
   path: "/",
 };
 
@@ -32,21 +31,15 @@ type Params = {
 };
 
 export const setAuthCookies = ({ res, access_token, refresh_token }: Params) => {
-  // Clear previous cookies using same attrs to avoid duplicates
-  res.clearCookie("access_token", defaults);
-  res.clearCookie("refresh_token", defaults);
+  // ❌ Hapus clearCookie sebelumnya agar tidak duplikat
+  // res.clearCookie("access_token", defaults);
+  // res.clearCookie("refresh_token", defaults);
 
-  res.cookie("access_token", access_token, {
-    ...getAccessTokenCookieOptions(),
-  });
-
-  res.cookie("refresh_token", refresh_token, {
-    ...getRefreshTokenCookieOptions(),
-  });
+  res.cookie("access_token", access_token, getAccessTokenCookieOptions());
+  res.cookie("refresh_token", refresh_token, getRefreshTokenCookieOptions());
 };
 
 export const clearAuthCookies = (res: Response) => {
-  // Use the same defaults when clearing
-  res.clearCookie("access_token", defaults);
-  res.clearCookie("refresh_token", defaults);
+  res.clearCookie("access_token", { ...defaults, expires: new Date(0) });
+  res.clearCookie("refresh_token", { ...defaults, expires: new Date(0) });
 };
