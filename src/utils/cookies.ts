@@ -7,8 +7,8 @@ const secure = NODE_ENV === "production";
 
 const defaults: CookieOptions = {
   httpOnly: true,
-  secure,
-  sameSite: "none",
+  secure: false,
+  sameSite: "lax",
 };
 
 type Params = {
