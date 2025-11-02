@@ -3,20 +3,15 @@ import { NODE_ENV } from "../constants/env";
 import { fifteenMinutesFromNow, thirtyDaysFromNow } from "./date";
 
 export const REFRESH_PATH = "/api/v1/auth/refresh";
-const clientUrl = process.env.APP_ORIGIN ?? "http://localhost:3000";
-const isHttps = clientUrl.startsWith("https://");
+
+const APP_ORIGIN = process.env.APP_ORIGIN ?? "http://localhost:3000";
+const isLocalhost = APP_ORIGIN.includes("localhost");
 
 const defaults: CookieOptions = {
   httpOnly: true,
-  secure: isHttps, // ✅ otomatis true hanya jika frontend HTTPS
-  sameSite: isHttps ? "none" : "lax", // ✅ none untuk prod, lax untuk local dev
-};
-
-
-type Params = {
-  res: Response;
-  access_token: string;
-  refresh_token: string;
+  secure: !isLocalhost, // ✅ secure false di localhost, true di prod
+  sameSite: isLocalhost ? "lax" : "none", // ✅ lax untuk local, none untuk prod
+  path: "/",
 };
 
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
@@ -27,16 +22,25 @@ export const getAccessTokenCookieOptions = (): CookieOptions => ({
 export const getRefreshTokenCookieOptions = (): CookieOptions => ({
   ...defaults,
   expires: thirtyDaysFromNow(),
-  // path: REFRESH_PATH,
-  path: "/",
 });
 
+type Params = {
+  res: Response;
+  access_token: string;
+  refresh_token: string;
+};
+
 export const setAuthCookies = ({ res, access_token, refresh_token }: Params) => {
+  // 🧹 clear cookies dulu dengan konfigurasi identik agar tidak ada duplikasi
+  res.clearCookie("access_token", defaults);
+  res.clearCookie("refresh_token", defaults);
+
+  // ✅ set ulang cookie baru
   res.cookie("access_token", access_token, getAccessTokenCookieOptions());
   res.cookie("refresh_token", refresh_token, getRefreshTokenCookieOptions());
 };
 
 export const clearAuthCookies = (res: Response) => {
-  res.clearCookie("access_token");
-  res.clearCookie("refresh_token");
+  res.clearCookie("access_token", defaults);
+  res.clearCookie("refresh_token", defaults);
 };
