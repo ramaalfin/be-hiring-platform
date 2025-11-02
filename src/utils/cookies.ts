@@ -31,21 +31,23 @@ type Params = {
 };
 
 export const setAuthCookies = ({ res, access_token, refresh_token }: any) => {
-  const isProduction = process.env.NODE_ENV === "production";
-  const cookieOptions = {
+  const isLocal = process.env.APP_ORIGIN?.includes("localhost");
+
+  const commonOptions = {
     httpOnly: true,
-    secure: false,
-    sameSite: "None", // allow even from localhost:3000
+    secure: !isLocal, // ❌ jangan pakai secure saat FE lokal
+    sameSite: isLocal ? "Lax" : "None",
     path: "/",
-  };
+  } as const;
 
   res.cookie("access_token", access_token, {
-    ...cookieOptions,
-    maxAge: 15 * 60 * 1000, // 15 minutes
+    ...commonOptions,
+    maxAge: 15 * 60 * 1000, // 15 menit
   });
+
   res.cookie("refresh_token", refresh_token, {
-    ...cookieOptions,
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    ...commonOptions,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
   });
 };
 
