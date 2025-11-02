@@ -112,6 +112,27 @@ export const verifyMagicRegisterController = catchErrors(async (req, res) => {
   });
 });
 
+export const meController = catchErrors(async (req, res) => {
+  const userId = req.userId;
+
+  if (!userId) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: userId.toString() },
+    select: {
+      id: true,
+      email: true,
+      fullName: true,
+      role: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  return res.status(OK).json({ user });
+})
 
 export const logoutController = catchErrors(async (req, res) => {
   const access_token = req.cookies.access_token;

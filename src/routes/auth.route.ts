@@ -3,6 +3,7 @@ import {
   forgotPasswordController,
   loginController,
   logoutController,
+  meController,
   refreshController,
   registerController,
   resetPasswordController,
@@ -12,6 +13,7 @@ import {
   verifyMagicLoginController,
   verifyMagicRegisterController,
 } from "../controllers/auth.controller";
+import authenticate from "../middleware/authenticate";
 
 const authRoutes = Router();
 
@@ -26,5 +28,7 @@ authRoutes.post("/magic-login", sendMagicLoginController);
 authRoutes.get("/magic-login/verify", verifyMagicLoginController);
 authRoutes.post("/magic-register", sendMagicRegisterController);
 authRoutes.get("/magic-register/verify", verifyMagicRegisterController);
+authRoutes.get("/me", authenticate, meController);
+
 
 export default authRoutes;
