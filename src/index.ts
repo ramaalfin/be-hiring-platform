@@ -21,12 +21,12 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
+      "http://localhost:3001",
       "https://fe-hiring-platform.vercel.app" // ganti sesuai domain FE prod
     ],
     credentials: true
   })
 );
-
 
 app.use(cookieParser());
 
