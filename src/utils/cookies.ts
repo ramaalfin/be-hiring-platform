@@ -30,15 +30,25 @@ type Params = {
   refresh_token: string;
 };
 
-export const setAuthCookies = ({ res, access_token, refresh_token }: Params) => {
-  // 🧹 clear cookies dulu dengan konfigurasi identik agar tidak ada duplikasi
-  res.clearCookie("access_token", defaults);
-  res.clearCookie("refresh_token", defaults);
+export const setAuthCookies = ({ res, access_token, refresh_token }: any) => {
+  const isProduction = process.env.NODE_ENV === "production";
+  const cookieOptions = {
+    httpOnly: true,
+    secure: false,
+    sameSite: "None", // allow even from localhost:3000
+    path: "/",
+  };
 
-  // ✅ set ulang cookie baru
-  res.cookie("access_token", access_token, getAccessTokenCookieOptions());
-  res.cookie("refresh_token", refresh_token, getRefreshTokenCookieOptions());
+  res.cookie("access_token", access_token, {
+    ...cookieOptions,
+    maxAge: 15 * 60 * 1000, // 15 minutes
+  });
+  res.cookie("refresh_token", refresh_token, {
+    ...cookieOptions,
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+  });
 };
+
 
 export const clearAuthCookies = (res: Response) => {
   res.clearCookie("access_token", defaults);
