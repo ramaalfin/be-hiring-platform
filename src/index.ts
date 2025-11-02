@@ -21,7 +21,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://your-frontend-domain.vercel.app" // ganti sesuai domain FE prod
+      "https://fe-hiring-platform.vercel.app" // ganti sesuai domain FE prod
     ],
     credentials: true
   })
