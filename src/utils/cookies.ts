@@ -20,6 +20,7 @@ type Params = {
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
   ...defaults,
   expires: fifteenMinutesFromNow(),
+  path: "/"
 });
 
 export const getRefreshTokenCookieOptions = (): CookieOptions => ({
