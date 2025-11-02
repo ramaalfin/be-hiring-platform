@@ -9,7 +9,7 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const defaults: CookieOptions = {
   httpOnly: true,
-  secure: isProduction,                // ✅ hanya true di production
+  secure: false,                // ✅ hanya true di production
   sameSite: isProduction ? "none" : "lax", // ✅ Lax di dev, None di prod
   path: "/",
 };
