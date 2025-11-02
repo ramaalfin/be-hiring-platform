@@ -11,6 +11,7 @@ const defaults: CookieOptions = {
   httpOnly: true,
   secure: isProduction,
   sameSite: isProduction ? "none" : "lax",
+  path: "/"
 };
 
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
@@ -30,10 +31,6 @@ type Params = {
 };
 
 export const setAuthCookies = ({ res, access_token, refresh_token }: Params) => {
-  // ❌ Hapus clearCookie sebelumnya agar tidak duplikat
-  // res.clearCookie("access_token", defaults);
-  // res.clearCookie("refresh_token", defaults);
-
   res.cookie("access_token", access_token, getAccessTokenCookieOptions());
   res.cookie("refresh_token", refresh_token, getRefreshTokenCookieOptions());
 };
