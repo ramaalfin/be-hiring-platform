@@ -11,7 +11,8 @@ const defaults: CookieOptions = {
   httpOnly: true,
   secure: isProduction,
   sameSite: isProduction ? "none" : "lax",
-  path: "/"
+  path: "/",
+  domain: "http://localhost:3000"
 };
 
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
