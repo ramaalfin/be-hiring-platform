@@ -1,16 +1,17 @@
+// cookies.ts
 import { CookieOptions, Response } from "express";
-import { NODE_ENV } from "../constants/env";
 import { fifteenMinutesFromNow, thirtyDaysFromNow } from "./date";
 
 export const REFRESH_PATH = "/api/v1/auth/refresh";
 
-const APP_ORIGIN = process.env.APP_ORIGIN ?? "http://localhost:3000";
-const isLocalhost = APP_ORIGIN.includes("localhost");
+// Use NODE_ENV to decide production vs dev.
+// On Vercel NODE_ENV is "production".
+const isProduction = process.env.NODE_ENV === "production";
 
 const defaults: CookieOptions = {
   httpOnly: true,
-  secure: !isLocalhost, // ✅ secure false di localhost, true di prod
-  sameSite: isLocalhost ? "lax" : "none", // ✅ lax untuk local, none untuk prod
+  secure: isProduction,              // ✅ true in production (Vercel)
+  sameSite: isProduction ? "none" : "lax", // ✅ cross-site allowed in production
   path: "/",
 };
 
@@ -30,29 +31,22 @@ type Params = {
   refresh_token: string;
 };
 
-export const setAuthCookies = ({ res, access_token, refresh_token }: any) => {
-  const isLocal = process.env.APP_ORIGIN?.includes("localhost");
-
-  const commonOptions = {
-    httpOnly: true,
-    secure: !isLocal, // ❌ jangan pakai secure saat FE lokal
-    sameSite: isLocal ? "Lax" : "None",
-    path: "/",
-  } as const;
+export const setAuthCookies = ({ res, access_token, refresh_token }: Params) => {
+  // Clear previous cookies using same attrs to avoid duplicates
+  res.clearCookie("access_token", defaults);
+  res.clearCookie("refresh_token", defaults);
 
   res.cookie("access_token", access_token, {
-    ...commonOptions,
-    maxAge: 15 * 60 * 1000, // 15 menit
+    ...getAccessTokenCookieOptions(),
   });
 
   res.cookie("refresh_token", refresh_token, {
-    ...commonOptions,
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari
+    ...getRefreshTokenCookieOptions(),
   });
 };
 
-
 export const clearAuthCookies = (res: Response) => {
+  // Use the same defaults when clearing
   res.clearCookie("access_token", defaults);
   res.clearCookie("refresh_token", defaults);
 };

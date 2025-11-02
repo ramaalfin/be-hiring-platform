@@ -21,8 +21,9 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
+      "https://your-frontend-domain.vercel.app" // ganti sesuai domain FE prod
     ],
-    credentials: true, // wajib!
+    credentials: true
   })
 );
 
