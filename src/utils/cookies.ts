@@ -9,8 +9,8 @@ const isProduction = process.env.NODE_ENV === "production";
 
 const defaults: CookieOptions = {
   httpOnly: true,
-  secure: isProduction,
-  sameSite: isProduction ? "none" : "lax",
+  secure: false,
+  sameSite: "lax",
   path: "/",
   domain: "http://localhost:3000"
 };
