@@ -3,13 +3,15 @@ import { NODE_ENV } from "../constants/env";
 import { fifteenMinutesFromNow, thirtyDaysFromNow } from "./date";
 
 export const REFRESH_PATH = "/api/v1/auth/refresh";
-const secure = NODE_ENV === "production";
+const clientUrl = process.env.APP_ORIGIN ?? "http://localhost:3000";
+const isHttps = clientUrl.startsWith("https://");
 
 const defaults: CookieOptions = {
   httpOnly: true,
-  secure: false,
-  sameSite: "lax",
+  secure: isHttps, // ✅ otomatis true hanya jika frontend HTTPS
+  sameSite: isHttps ? "none" : "lax", // ✅ none untuk prod, lax untuk local dev
 };
+
 
 type Params = {
   res: Response;
@@ -20,7 +22,6 @@ type Params = {
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
   ...defaults,
   expires: fifteenMinutesFromNow(),
-  path: "/"
 });
 
 export const getRefreshTokenCookieOptions = (): CookieOptions => ({
