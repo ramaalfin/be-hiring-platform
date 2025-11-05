@@ -63,7 +63,6 @@ const defaults: CookieOptions = {
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
   ...defaults,
   expires: fifteenMinutesFromNow(),
-  path: "/", // pastikan tetap global
 });
 
 export const getRefreshTokenCookieOptions = (): CookieOptions => ({
