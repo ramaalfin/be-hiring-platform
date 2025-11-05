@@ -30,5 +30,4 @@ authRoutes.post("/magic-register", sendMagicRegisterController);
 authRoutes.get("/magic-register/verify", verifyMagicRegisterController);
 authRoutes.get("/me", authenticate, meController);
 
-
 export default authRoutes;
