@@ -11,7 +11,6 @@ const defaults: CookieOptions = {
   httpOnly: true,
   secure: isProduction,
   sameSite: isProduction ? "none" : "lax",
-  domain: isProduction ? ".vercel.app" : undefined,
 };
 
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
