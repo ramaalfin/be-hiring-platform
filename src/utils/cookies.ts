@@ -12,7 +12,6 @@ const defaults: CookieOptions = {
   secure: isProduction,
   sameSite: isProduction ? "none" : "lax",
   path: "/",
-  domain: ".hiring-platform.com", // memungkinkan subdomain share cookie
 };
 
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
@@ -23,7 +22,6 @@ export const getAccessTokenCookieOptions = (): CookieOptions => ({
 export const getRefreshTokenCookieOptions = (): CookieOptions => ({
   ...defaults,
   expires: thirtyDaysFromNow(),
-  path: "/",
 });
 
 type Params = {
@@ -32,11 +30,7 @@ type Params = {
   refresh_token: string;
 };
 
-export const setAuthCookies = ({
-  res,
-  access_token,
-  refresh_token,
-}: Params) => {
+export const setAuthCookies = ({ res, access_token, refresh_token }: Params) => {
   res.cookie("access_token", access_token, getAccessTokenCookieOptions());
   res.cookie("refresh_token", refresh_token, getRefreshTokenCookieOptions());
 };
