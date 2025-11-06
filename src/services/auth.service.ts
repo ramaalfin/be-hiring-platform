@@ -6,6 +6,7 @@ import {
   ONE_DAY_MS,
   oneHourFromNow,
   oneYearFromNow,
+  thirtyDaysFromNow,
 } from "../utils/date";
 import appAssert from "../utils/appAssert";
 import {
@@ -65,7 +66,7 @@ export const createAccount = async (data: CreateAccountData) => {
     data: {
       userId: user.id.toString(),
       type: VerificationCodeType.EmailVerification,
-      expiresAt: oneYearFromNow(),
+      expiresAt: thirtyDaysFromNow(),
       createdAt: new Date(),
     },
   });
@@ -82,7 +83,7 @@ export const createAccount = async (data: CreateAccountData) => {
     data: {
       userId: user.id,
       userAgent: data.userAgent,
-      expiresAt: oneYearFromNow(),
+      expiresAt: thirtyDaysFromNow(),
     },
   });
 
@@ -163,7 +164,7 @@ export const refreshUserAccessToken = async (refresh_token: string) => {
 
   const sessionNeedRefresh = session.expiresAt.getTime() - now <= ONE_DAY_MS;
   if (sessionNeedRefresh) {
-    session.expiresAt = oneYearFromNow();
+    session.expiresAt = thirtyDaysFromNow();
   }
 
   const newRefreshToken = sessionNeedRefresh
@@ -179,7 +180,6 @@ export const refreshUserAccessToken = async (refresh_token: string) => {
 
   return { access_token, newRefreshToken };
 };
-
 
 export const verifyEmail = async (code: string) => {
   const validCode = await prisma.verificationCode.findUnique({
@@ -234,13 +234,14 @@ export const forgotPasswordService = async (email: string) => {
     data: {
       userId: user.id.toString(),
       type: VerificationCodeType.PasswordReset,
-      expiresAt: oneYearFromNow(),
+      expiresAt: thirtyDaysFromNow(),
       createdAt: new Date(),
     },
   });
 
-  const url = `${APP_ORIGIN}/reset-password?code=${verificationCode.id
-    }&expiresAt=${expiresAt.getTime()}`;
+  const url = `${APP_ORIGIN}/reset-password?code=${
+    verificationCode.id
+  }&expiresAt=${expiresAt.getTime()}`;
 
   await sendForgotPasswordEmail(email, url);
 

@@ -178,20 +178,19 @@ export const refreshController = catchErrors(async (req, res) => {
     refresh_token
   );
 
-  // if (newRefreshToken) {
-  //   res.cookie("refresh_token", newRefreshToken, getRefreshTokenCookieOptions());
-  // }
+  if (newRefreshToken) {
+    res.cookie(
+      "refresh_token",
+      newRefreshToken,
+      getRefreshTokenCookieOptions()
+    );
+  }
 
-  setAuthCookies({ res, access_token, refresh_token: newRefreshToken! });
+  res.cookie("access_token", access_token, getAccessTokenCookieOptions());
 
-  return (
-    res
-      .status(OK)
-      // .cookie("access_token", access_token, getAccessTokenCookieOptions())
-      .json({
-        message: "Access Token refreshed",
-      })
-  );
+  return res.status(OK).json({
+    message: "Access Token refreshed",
+  });
 });
 
 export const verifyEmailController = catchErrors(async (req, res) => {
