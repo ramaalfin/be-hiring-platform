@@ -298,7 +298,7 @@ export const sendMagicLoginService = async (email: string) => {
     },
   });
 
-  const loginUrl = `${APP_ORIGIN}/magic?code=${verificationCode.id}`;
+  const loginUrl = `${APP_ORIGIN}/signin/magic?code=${verificationCode.id}`;
   await sendMagicLoginEmail(email, loginUrl);
 
   return { message: "Magic link sent" };
