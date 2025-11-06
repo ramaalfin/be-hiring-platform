@@ -11,6 +11,8 @@ const defaults: CookieOptions = {
   httpOnly: true,
   secure: isProduction,
   sameSite: isProduction ? "none" : "lax",
+  path: "/",
+  domain: ".hiring-platform.com", // memungkinkan subdomain share cookie
 };
 
 export const getAccessTokenCookieOptions = (): CookieOptions => ({
