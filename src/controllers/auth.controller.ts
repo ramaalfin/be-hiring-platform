@@ -84,8 +84,16 @@ export const verifyMagicLoginController = catchErrors(async (req, res) => {
   const tokens = await verifyMagicLoginService(code);
 
   // Set cookie di sini
-  res.cookie("access_token", tokens.access_token, getAccessTokenCookieOptions());
-  res.cookie("refresh_token", tokens.refresh_token, getRefreshTokenCookieOptions());
+  res.cookie(
+    "access_token",
+    tokens.access_token,
+    getAccessTokenCookieOptions()
+  );
+  res.cookie(
+    "refresh_token",
+    tokens.refresh_token,
+    getRefreshTokenCookieOptions()
+  );
 
   return res.status(200).json({
     message: "Magic login successful",
@@ -103,8 +111,16 @@ export const verifyMagicRegisterController = catchErrors(async (req, res) => {
   const code = verificationCodeSchema.parse(req.query.code);
   const tokens = await verifyMagicRegisterService(code);
 
-  res.cookie("access_token", tokens.access_token, getAccessTokenCookieOptions());
-  res.cookie("refresh_token", tokens.refresh_token, getRefreshTokenCookieOptions());
+  res.cookie(
+    "access_token",
+    tokens.access_token,
+    getAccessTokenCookieOptions()
+  );
+  res.cookie(
+    "refresh_token",
+    tokens.refresh_token,
+    getRefreshTokenCookieOptions()
+  );
 
   return res.status(200).json({
     message: "Magic registration successful",
@@ -132,7 +148,7 @@ export const meController = catchErrors(async (req, res) => {
   });
 
   return res.status(OK).json({ user });
-})
+});
 
 export const logoutController = catchErrors(async (req, res) => {
   const access_token = req.cookies.access_token;
@@ -162,16 +178,20 @@ export const refreshController = catchErrors(async (req, res) => {
     refresh_token
   );
 
-  if (newRefreshToken) {
-    res.cookie("refresh_token", newRefreshToken, getRefreshTokenCookieOptions());
-  }
+  // if (newRefreshToken) {
+  //   res.cookie("refresh_token", newRefreshToken, getRefreshTokenCookieOptions());
+  // }
 
-  return res
-    .status(OK)
-    .cookie("access_token", access_token, getAccessTokenCookieOptions())
-    .json({
-      message: "Access Token refreshed",
-    });
+  setAuthCookies({ res, access_token, refresh_token: newRefreshToken! });
+
+  return (
+    res
+      .status(OK)
+      // .cookie("access_token", access_token, getAccessTokenCookieOptions())
+      .json({
+        message: "Access Token refreshed",
+      })
+  );
 });
 
 export const verifyEmailController = catchErrors(async (req, res) => {

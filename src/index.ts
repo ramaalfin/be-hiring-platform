@@ -22,9 +22,10 @@ app.use(
     origin: [
       "http://localhost:3000",
       "http://localhost:3001",
-      "https://fe-hiring-platform.vercel.app" // ganti sesuai domain FE prod
+      "https://fe-hiring-platform.vercel.app",
+      "https://hiring-platform.vercel.app",
     ],
-    credentials: true
+    credentials: true,
   })
 );
 
