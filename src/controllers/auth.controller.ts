@@ -38,7 +38,7 @@ export const registerController = catchErrors(async (req, res) => {
 
   const { user, access_token, refresh_token } = await createAccount(request);
 
-  setAuthCookies({ res, access_token, refresh_token });
+  // setAuthCookies({ res, access_token, refresh_token });
 
   return res.status(CREATED).json({
     message: "Account created successfully",
@@ -48,6 +48,8 @@ export const registerController = catchErrors(async (req, res) => {
       email: user.email,
       role: user.role,
     },
+    access_token,
+    refresh_token,
   });
 });
 
@@ -60,7 +62,7 @@ export const loginController = catchErrors(async (req, res) => {
 
   const { access_token, refresh_token, user } = await loginUser(data);
 
-  setAuthCookies({ res, access_token, refresh_token });
+  // setAuthCookies({ res, access_token, refresh_token });
 
   return res.status(OK).json({
     message: "Login successful",
@@ -70,6 +72,8 @@ export const loginController = catchErrors(async (req, res) => {
       fullName: user.fullName,
       role: user.role,
     },
+    access_token,
+    refresh_token,
   });
 });
 
@@ -84,20 +88,22 @@ export const verifyMagicLoginController = catchErrors(async (req, res) => {
   const tokens = await verifyMagicLoginService(code);
 
   // Set cookie di sini
-  res.cookie(
-    "access_token",
-    tokens.access_token,
-    getAccessTokenCookieOptions()
-  );
-  res.cookie(
-    "refresh_token",
-    tokens.refresh_token,
-    getRefreshTokenCookieOptions()
-  );
+  // res.cookie(
+  //   "access_token",
+  //   tokens.access_token,
+  //   getAccessTokenCookieOptions()
+  // );
+  // res.cookie(
+  //   "refresh_token",
+  //   tokens.refresh_token,
+  //   getRefreshTokenCookieOptions()
+  // );
 
   return res.status(200).json({
     message: "Magic login successful",
     user: tokens.user,
+    access_token: tokens.access_token,
+    refresh_token: tokens.refresh_token,
   });
 });
 
@@ -111,20 +117,22 @@ export const verifyMagicRegisterController = catchErrors(async (req, res) => {
   const code = verificationCodeSchema.parse(req.query.code);
   const tokens = await verifyMagicRegisterService(code);
 
-  res.cookie(
-    "access_token",
-    tokens.access_token,
-    getAccessTokenCookieOptions()
-  );
-  res.cookie(
-    "refresh_token",
-    tokens.refresh_token,
-    getRefreshTokenCookieOptions()
-  );
+  // res.cookie(
+  //   "access_token",
+  //   tokens.access_token,
+  //   getAccessTokenCookieOptions()
+  // );
+  // res.cookie(
+  //   "refresh_token",
+  //   tokens.refresh_token,
+  //   getRefreshTokenCookieOptions()
+  // );
 
   return res.status(200).json({
     message: "Magic registration successful",
     user: tokens.user,
+    access_token: tokens.access_token,
+    refresh_token: tokens.refresh_token,
   });
 });
 
@@ -178,18 +186,20 @@ export const refreshController = catchErrors(async (req, res) => {
     refresh_token
   );
 
-  if (newRefreshToken) {
-    res.cookie(
-      "refresh_token",
-      newRefreshToken,
-      getRefreshTokenCookieOptions()
-    );
-  }
+  // if (newRefreshToken) {
+  //   res.cookie(
+  //     "refresh_token",
+  //     newRefreshToken,
+  //     getRefreshTokenCookieOptions()
+  //   );
+  // }
 
-  res.cookie("access_token", access_token, getAccessTokenCookieOptions());
+  // res.cookie("access_token", access_token, getAccessTokenCookieOptions());
 
   return res.status(OK).json({
     message: "Access Token refreshed",
+    access_token,
+    refresh_token: newRefreshToken ?? null,
   });
 });
 

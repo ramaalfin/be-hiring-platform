@@ -30,7 +30,11 @@ type Params = {
   refresh_token: string;
 };
 
-export const setAuthCookies = ({ res, access_token, refresh_token }: Params) => {
+export const setAuthCookies = ({
+  res,
+  access_token,
+  refresh_token,
+}: Params) => {
   res.cookie("access_token", access_token, getAccessTokenCookieOptions());
   res.cookie("refresh_token", refresh_token, getRefreshTokenCookieOptions());
 };
