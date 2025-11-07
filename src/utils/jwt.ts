@@ -22,7 +22,7 @@ const defaults: SignOptions = {
 };
 
 const access_tokenSignOptions: SignOptionsAndSecret = {
-  expiresIn: "2m",
+  expiresIn: "15m",
   secret: JWT_SECRET,
 };
 
@@ -64,7 +64,6 @@ export const generateUserTokens = async (userId: string) => {
     select: { role: true },
   });
 
-
   const session = await prisma.session.create({
     data: { userId, userAgent: "magic_link" },
   });
@@ -75,7 +74,7 @@ export const generateUserTokens = async (userId: string) => {
   const access_token = signToken({
     ...sessionInfo,
     userId,
-    role: user?.role
+    role: user?.role,
   });
 
   return { access_token, refresh_token };

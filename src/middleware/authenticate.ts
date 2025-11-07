@@ -4,9 +4,12 @@ import AppErrorCode from "../constants/appErrorCode";
 import { UNAUTHORIZED } from "../constants/http";
 import { verifyToken } from "../utils/jwt";
 
-// wrap with catchErrors() if you need this to be async
 const authenticate: RequestHandler = (req, res, next) => {
-  const access_token = req.cookies.access_token as string | undefined;
+  // Ambil token dari cookie atau dari header
+  const bearerToken = req.headers.authorization?.split(" ")[1];
+  const cookieToken = req.cookies.access_token;
+  const access_token = bearerToken || cookieToken;
+
   appAssert(
     access_token,
     UNAUTHORIZED,
@@ -15,6 +18,7 @@ const authenticate: RequestHandler = (req, res, next) => {
   );
 
   const { error, payload } = verifyToken(access_token);
+
   appAssert(
     payload,
     UNAUTHORIZED,
@@ -22,12 +26,14 @@ const authenticate: RequestHandler = (req, res, next) => {
     AppErrorCode.InvalidAccessToken
   );
 
+  // Simpan payload ke req
   // @ts-ignore
   req.userId = payload.userId;
   // @ts-ignore
   req.sessionId = payload.sessionId;
   // @ts-ignore
   req.userRole = payload.role;
+
   next();
 };
 

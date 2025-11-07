@@ -373,7 +373,6 @@ export const verifyMagicRegisterService = async (code: string) => {
     where: {
       id: code,
       type: VerificationCodeType.MagicRegister,
-      expiresAt: { gt: new Date() },
     },
   });
   appAssert(validCode, UNAUTHORIZED, "Link expired or invalid");
@@ -382,8 +381,6 @@ export const verifyMagicRegisterService = async (code: string) => {
     where: { id: validCode.userId },
     data: { verified: true },
   });
-
-  await prisma.verificationCode.delete({ where: { id: validCode.id } });
 
   const session = await prisma.session.create({
     data: { userId: user.id },
@@ -396,6 +393,8 @@ export const verifyMagicRegisterService = async (code: string) => {
     userId: user.id,
     role: user.role,
   });
+
+  // await prisma.verificationCode.delete({ where: { id: validCode.id } });
 
   const { password: _, ...userWithoutPassword } = user;
 

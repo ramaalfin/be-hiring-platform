@@ -85,7 +85,10 @@ export const sendMagicLoginController = catchErrors(async (req, res) => {
 
 export const verifyMagicLoginController = catchErrors(async (req, res) => {
   const code = verificationCodeSchema.parse(req.query.code);
-  const tokens = await verifyMagicLoginService(code);
+
+  const { user, access_token, refresh_token } = await verifyMagicLoginService(
+    code
+  );
 
   // Set cookie di sini
   // res.cookie(
@@ -101,9 +104,9 @@ export const verifyMagicLoginController = catchErrors(async (req, res) => {
 
   return res.status(200).json({
     message: "Magic login successful",
-    user: tokens.user,
-    access_token: tokens.access_token,
-    refresh_token: tokens.refresh_token,
+    user: user,
+    access_token: access_token,
+    refresh_token: refresh_token,
   });
 });
 
@@ -115,7 +118,8 @@ export const sendMagicRegisterController = catchErrors(async (req, res) => {
 
 export const verifyMagicRegisterController = catchErrors(async (req, res) => {
   const code = verificationCodeSchema.parse(req.query.code);
-  const tokens = await verifyMagicRegisterService(code);
+  const { user, access_token, refresh_token } =
+    await verifyMagicRegisterService(code);
 
   // res.cookie(
   //   "access_token",
@@ -130,9 +134,9 @@ export const verifyMagicRegisterController = catchErrors(async (req, res) => {
 
   return res.status(200).json({
     message: "Magic registration successful",
-    user: tokens.user,
-    access_token: tokens.access_token,
-    refresh_token: tokens.refresh_token,
+    user: user,
+    access_token: access_token,
+    refresh_token: refresh_token,
   });
 });
 
@@ -178,7 +182,9 @@ export const logoutController = catchErrors(async (req, res) => {
 });
 
 export const refreshController = catchErrors(async (req, res) => {
-  const refresh_token = req.cookies.refresh_token as string | undefined;
+  const refresh_token =
+    req.body?.refresh_token ||
+    (req.cookies.refresh_token as string | undefined);
 
   appAssert(refresh_token, UNAUTHORIZED, "Missing refresh token");
 
