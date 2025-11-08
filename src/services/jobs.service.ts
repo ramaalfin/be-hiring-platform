@@ -98,6 +98,7 @@ export const getAllJobsService = async (req: any) => {
       jobType,
     } = req.query;
 
+    const userId = req?.user?.id;
     const skip = (Number(page) - 1) * Number(limit);
     const take = Number(limit);
 
@@ -123,6 +124,10 @@ export const getAllJobsService = async (req: any) => {
           createdByUser: {
             select: { id: true, fullName: true, email: true },
           },
+          applications: {
+            where: { userId }, // ⬅️ filter aplikasi oleh user login
+            select: { id: true },
+          },
         },
         orderBy: { [sortBy]: order },
         skip,
@@ -131,12 +136,17 @@ export const getAllJobsService = async (req: any) => {
       prisma.job.count({ where }),
     ]);
 
+    const jobsWithApplyStatus = jobs.map((job) => ({
+      ...job,
+      hasApplied: job.applications.length > 0,
+    }));
+
     const totalPages = Math.ceil(total / take);
 
     return {
       status: OK,
       message: "Jobs fetched successfully",
-      data: jobs,
+      data: jobsWithApplyStatus,
       meta: {
         total,
         page: Number(page),
