@@ -163,19 +163,21 @@ export const meController = catchErrors(async (req, res) => {
 });
 
 export const logoutController = catchErrors(async (req, res) => {
-  const access_token = req.cookies.access_token;
-  const { payload } = verifyToken(access_token);
+  const authHeader = req.headers.authorization;
+  const token = authHeader?.split(" ")[1];
 
-  if (payload) {
-    await prisma.session.deleteMany({
-      where: {
-        id: payload.sessionId,
-        userId: payload.userId,
-      },
-    });
+  if (token) {
+    const { payload } = verifyToken(token);
+    if (payload) {
+      await prisma.session.deleteMany({
+        where: {
+          id: payload.sessionId,
+          userId: payload.userId,
+        },
+      });
+    }
   }
 
-  clearAuthCookies(res);
   return res.status(OK).json({
     message: "Logout successful",
   });
