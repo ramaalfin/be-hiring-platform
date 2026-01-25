@@ -57,6 +57,53 @@ export const createJobService = async (userId: string, payload: JobPayload) => {
   }
 };
 
+// services/jobService.ts
+export const createJobServiceNew = async (userId: string, payload: JobPayload) => {
+  try {
+    // Validation
+    if (!payload.jobName || !payload.jobType) {
+      console.error('Validation failed: Missing required fields');
+      throw new Error('Missing required fields');
+    }
+
+    // Convert salary to numbers if they're strings
+    const minimumSalary = typeof payload.minimumSalary === 'string'
+      ? parseInt(payload.minimumSalary)
+      : payload.minimumSalary;
+
+    const maximumSalary = typeof payload.maximumSalary === 'string'
+      ? parseInt(payload.maximumSalary)
+      : payload.maximumSalary;
+
+    const newJob = await prisma.job.create({
+      data: {
+        jobName: payload.jobName,
+        jobType: payload.jobType,
+        jobDescription: payload.jobDescription || '', // Default jika undefined
+        numberOfCandidateNeeded: payload.numberOfCandidateNeeded || 1,
+        minimumSalary: minimumSalary.toString(),
+        maximumSalary: maximumSalary.toString(),
+        minimumProfileInformationRequired:
+          payload.minimumProfileInformationRequired as unknown as object,
+        createdBy: userId,
+      },
+    });
+
+    return {
+      status: OK,
+      message: "Job created successfully",
+      data: newJob,
+    };
+  } catch (error) {
+    // Return error response yang proper
+    throw {
+      status: INTERNAL_SERVER_ERROR,
+      message: error instanceof Error ? error.message : "Failed to create job",
+      details: error
+    };
+  }
+};
+
 export const updateJobService = async (jobId: string, payload: JobPayload) => {
   try {
     const existingJob = await prisma.job.findUnique({ where: { id: jobId } });

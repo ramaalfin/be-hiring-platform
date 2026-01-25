@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import {
     applyJobService,
+    getAllApplicationsService,
     getApplicationsByAdminService,
     getApplicationsByUserService,
 } from "../services/application.service";
@@ -38,4 +39,9 @@ export const getApplicationsByUserController = catchErrors(async (req, res) => {
     const { userId } = req.params;
     const applications = await getApplicationsByUserService(userId);
     return res.status(OK).json({ applications });
+});
+
+export const getAllApplicationsController = catchErrors(async (req, res) => {
+    const applications = await getAllApplicationsService();
+    return res.status(OK).json(applications);
 });

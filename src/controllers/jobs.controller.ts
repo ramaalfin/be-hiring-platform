@@ -8,6 +8,7 @@ import {
   getJobByIdService,
   deleteJobService,
   getJobByAdminService,
+  createJobServiceNew,
 } from "../services/jobs.service";
 
 export const createJobController = catchErrors(async (req, res) => {
@@ -17,6 +18,50 @@ export const createJobController = catchErrors(async (req, res) => {
   const newJob = await createJobService(userId.toString(), data);
   return res.status(CREATED).json({ job: newJob });
 });
+
+export const createJobControllerNew = catchErrors(async (req, res) => {
+  // Jika ada middleware auth, gunakan userId dari auth
+  const { userId } = req;
+  const data = req.body;
+
+  // Jika tidak ada userId dari auth, coba ambil dari body (untuk development)
+  let createdByUserId = userId;
+
+  if (!createdByUserId && data.createdBy) {
+    createdByUserId = data.createdBy;
+  }
+
+  if (!createdByUserId) {
+    return res.status(401).json({
+      success: false,
+      error: "Unauthorized: No user ID provided"
+    });
+  }
+
+  try {
+    // Hapus createdBy dari data sebelum dikirim ke service
+    const { createdBy, ...jobData } = data;
+
+    const newJob = await createJobService(createdByUserId.toString(), jobData);
+
+    return res.status(CREATED).json({
+      success: true,
+      message: newJob.message,
+      data: newJob.data,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error: any) {
+    console.error('Controller error:', error);
+
+    return res.status(error.status || 500).json({
+      success: false,
+      error: error.message || "Internal server error",
+      details: process.env.NODE_ENV === 'development' ? error.details : undefined
+    });
+  }
+
+});
+
 
 export const updateJobController = catchErrors(async (req, res) => {
   const { id } = req.params;

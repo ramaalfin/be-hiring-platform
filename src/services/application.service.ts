@@ -1,4 +1,4 @@
-import { NOT_FOUND } from "../constants/http";
+import { NOT_FOUND, OK } from "../constants/http";
 import prisma from "../prisma/client";
 import appAssert from "../utils/appAssert";
 
@@ -73,4 +73,33 @@ export const getApplicationsByUserService = async (userId: string) => {
         resume: app.resume,
         createdAt: app.createdAt,
     }));
+};
+
+export const getAllApplicationsService = async () => {
+    const applications = await prisma.application.findMany({
+        include: {
+            job: true,
+            user: true,
+        },
+        orderBy: { createdAt: "desc" },
+    });
+
+    const data = applications.map((app) => ({
+        id: app.id,
+        jobId: app.jobId,
+        jobName: app.job.jobName,
+        applicant: {
+            id: app.user.id,
+            fullName: app.user.fullName,
+            email: app.user.email,
+        },
+        resume: app.resume,
+        createdAt: app.createdAt,
+    }));
+
+    return {
+        status: OK,
+        message: "All applications retrieved successfully",
+        data,
+    }
 };

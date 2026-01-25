@@ -2,6 +2,7 @@ import express from "express";
 import { authorizeRole } from "../middleware/authorizeRole";
 import {
     applyJobController,
+    getAllApplicationsController,
     getApplicationsByAdminController,
     getApplicationsByUserController,
 } from "../controllers/application.controller";
@@ -32,5 +33,7 @@ applicationsRoutes.get(
     authorizeRole(["CANDIDATE"]),
     getApplicationsByUserController
 );
+
+applicationsRoutes.get("/", getAllApplicationsController);
 
 export default applicationsRoutes;
