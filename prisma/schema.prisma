@@ -7,11 +7,6 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Role {
-  ADMIN
-  CANDIDATE
-}
-
 model User {
   id             String             @id @default(uuid())
   fullName       String
@@ -24,53 +19,58 @@ model User {
   role           Role               @default(CANDIDATE)
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
-  sessions       Session[]
-  jobs           Job[]
   applications   Application[]
+  jobs           Job[]
+  sessions       Session[]
   verifications  VerificationCode[]
 }
 
 model Session {
   id        String    @id @default(uuid())
   userId    String
-  user      User      @relation(fields: [userId], references: [id])
   userAgent String?
-  expiresAt DateTime? @default(dbgenerated("now() + interval '30 days'"))
+  expiresAt DateTime? @default(dbgenerated("(now() + '30 days'::interval)"))
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+  user      User      @relation(fields: [userId], references: [id])
 }
 
 model VerificationCode {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
   type      String
   expiresAt DateTime
   createdAt DateTime
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model Job {
-  id             String   @id @default(uuid())
-  jobName        String
-  jobType        String
-  jobDescription String
-  numberOfCandidateNeeded Int   
-  minimumSalary  String
-  maximumSalary  String
+  id                                String        @id @default(uuid())
+  jobName                           String
+  jobType                           String
+  jobDescription                    String
+  numberOfCandidateNeeded           Int
+  minimumSalary                     String
+  maximumSalary                     String
   minimumProfileInformationRequired Json
-  createdBy      String
-  createdByUser  User     @relation(fields: [createdBy], references: [id])
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  applications   Application[]
+  createdBy                         String
+  createdAt                         DateTime      @default(now())
+  updatedAt                         DateTime      @updatedAt
+  applications                      Application[]
+  createdByUser                     User          @relation(fields: [createdBy], references: [id])
 }
 
 model Application {
   id        String   @id @default(uuid())
   jobId     String
-  job       Job      @relation(fields: [jobId], references: [id])
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
   resume    Json
   createdAt DateTime @default(now())
+  job       Job      @relation(fields: [jobId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  CANDIDATE
 }
