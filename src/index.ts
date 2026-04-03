@@ -21,14 +21,43 @@ app.use(requestLogger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// CORS configuration
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "https://fe-hiring-platform.vercel.app",
+  "https://hiring-platform.vercel.app",
+];
+
+// Add APP_ORIGIN if it exists
+if (APP_ORIGIN) {
+  allowedOrigins.push(APP_ORIGIN);
+}
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "https://fe-hiring-platform.vercel.app",
-      "https://hiring-platform.vercel.app",
-    ],
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      // Check if origin is in allowed list
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      
+      // Allow any vercel.app domain
+      if (origin.endsWith('.vercel.app')) {
+        return callback(null, true);
+      }
+      
+      // Allow any railway.app domain
+      if (origin.endsWith('.railway.app')) {
+        return callback(null, true);
+      }
+      
+      // Reject other origins
+      callback(new Error('Not allowed by CORS'));
+    },
     credentials: true,
   })
 );
