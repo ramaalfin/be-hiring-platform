@@ -2,11 +2,15 @@
 
 ## Issue Fixed ✅
 
-**Error**: `Cannot find module '/app/index.js'`
+**Error**: `Cannot find module '/app/dist/index.js'`
 
-**Root Cause**: Build script hanya menjalankan `prisma generate`, tidak compile TypeScript ke JavaScript.
+**Root Causes**:
+1. Build script hanya menjalankan `prisma generate`, tidak compile TypeScript
+2. `typescript` dan `prisma` ada di `devDependencies`, tidak ter-install di production
 
-**Solution**: Updated build script to compile TypeScript.
+**Solution**: 
+1. Updated build script to compile TypeScript
+2. Moved `typescript` and `prisma` to `dependencies`
 
 ## Changes Made
 
@@ -19,6 +23,11 @@
   "scripts": {
     "build": "npx prisma generate",
     "start": "node index.js"
+  },
+  "dependencies": { ... },
+  "devDependencies": {
+    "typescript": "^5.8.2",
+    "prisma": "^6.18.0"
   }
 }
 ```
@@ -30,11 +39,61 @@
   "scripts": {
     "build": "npx prisma generate && tsc",
     "start": "node dist/index.js"
+  },
+  "dependencies": {
+    ...existing dependencies,
+    "typescript": "^5.8.2",
+    "prisma": "^6.18.0"
+  },
+  "devDependencies": {
+    "@types/*": "...",
+    "ts-node-dev": "^2.0.0"
   }
 }
 ```
 
-### 2. Created .railwayignore
+**Key Changes**:
+- ✅ Build script now runs `tsc` to compile TypeScript
+- ✅ `typescript` moved to `dependencies` (needed for build in production)
+- ✅ `prisma` moved to `dependencies` (needed for migrations in production)
+- ✅ Start script points to `dist/index.js`
+
+### 2. Created Railway Configuration Files
+
+#### railway.toml
+```toml
+[build]
+builder = "NIXPACKS"
+buildCommand = "npm install && npm run build"
+
+[deploy]
+startCommand = "npm start"
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+```
+
+#### nixpacks.toml
+```toml
+[phases.setup]
+nixPkgs = ["nodejs_20"]
+
+[phases.install]
+cmds = ["npm ci"]
+
+[phases.build]
+cmds = ["npm run build"]
+
+[start]
+cmd = "npm start"
+```
+
+These files ensure Railway:
+- Uses Node.js 20
+- Installs dependencies with `npm ci`
+- Runs build command
+- Starts with `npm start`
+
+### 3. Created .railwayignore
 
 To exclude unnecessary files from deployment:
 ```
