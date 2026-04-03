@@ -43,7 +43,8 @@ export const sendTwoFACode = async (
   email: string,
   code: string
 ): Promise<void> => {
-  await transporter.sendMail({
+  // Fire and forget - don't wait for email to send
+  transporter.sendMail({
     from: `"Your App" <${GMAIL_USER}>`,
     to: email,
     subject: "Your Two-Factor Authentication Code",
@@ -51,6 +52,8 @@ export const sendTwoFACode = async (
       <p>Your verification code is: <strong>${code}</strong></p>
       <p>This code will expire in 5 minutes.</p>
     `,
+  }).catch(err => {
+    console.error('Failed to send 2FA code:', err);
   });
 };
 
@@ -60,7 +63,8 @@ export const sendVerificationEmail = async (
 ): Promise<void> => {
   const verificationUrl = `${APP_ORIGIN}/confirm-account?code=${verificationCode}`;
 
-  await transporter.sendMail({
+  // Fire and forget - don't wait for email to send
+  transporter.sendMail({
     from: `"Your App" <${GMAIL_USER}>`,
     to: email,
     subject: "Email Verification",
@@ -69,6 +73,8 @@ export const sendVerificationEmail = async (
       <a href="${verificationUrl}">${verificationUrl}</a>
       <p>This link will expire in 24 hours.</p>
     `,
+  }).catch(err => {
+    console.error('Failed to send verification email:', err);
   });
 };
 
@@ -92,7 +98,8 @@ export const sendForgotPasswordEmail = async (
 };
 
 export const sendMagicLoginEmail = async (email: string, url: string) => {
-  await transporter.sendMail({
+  // Fire and forget - don't wait for email to send
+  transporter.sendMail({
     from: `"GetJob" <${GMAIL_USER}>`,
     to: email,
     subject: "Masuk ke GetJob",
@@ -172,11 +179,14 @@ export const sendMagicLoginEmail = async (email: string, url: string) => {
       </body>
       </html>
     `,
+  }).catch(err => {
+    console.error('Failed to send magic login email:', err);
   });
 };
 
 export const sendMagicRegisterEmail = async (email: string, url: string) => {
-  await transporter.sendMail({
+  // Fire and forget - don't wait for email to send
+  transporter.sendMail({
     from: `"GetJob" <${GMAIL_USER}>`,
     to: email,
     subject: "Masuk ke GetJob GetJob",
@@ -256,5 +266,7 @@ export const sendMagicRegisterEmail = async (email: string, url: string) => {
       </body>
       </html>
     `,
+  }).catch(err => {
+    console.error('Failed to send magic register email:', err);
   });
 };
