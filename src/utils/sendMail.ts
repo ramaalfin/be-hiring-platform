@@ -24,13 +24,19 @@
 //   });
 
 import nodemailer from "nodemailer";
+import { Resend } from "resend";
 import {
   APP_ORIGIN,
   EMAIL_SERVICE,
   GMAIL_PASS,
   GMAIL_USER,
+  NODE_ENV,
 } from "../constants/env";
 
+// Initialize Resend (for production)
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+// Initialize Nodemailer (for development/fallback)
 const transporter = nodemailer.createTransport({
   service: EMAIL_SERVICE,
   auth: {
@@ -39,13 +45,51 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Email sender helper - uses Resend in production, Nodemailer in development
+const sendEmail = async (options: {
+  to: string;
+  subject: string;
+  html: string;
+}) => {
+  const useResend = process.env.RESEND_API_KEY && NODE_ENV === 'production';
+
+  if (useResend) {
+    // Use Resend for production (more reliable)
+    try {
+      await resend.emails.send({
+        from: process.env.EMAIL_FROM || 'GetJob <onboarding@resend.dev>',
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+      });
+      console.log(`✅ Email sent via Resend to ${options.to}`);
+    } catch (error) {
+      console.error('❌ Failed to send email via Resend:', error);
+      throw error;
+    }
+  } else {
+    // Use Nodemailer for development
+    try {
+      await transporter.sendMail({
+        from: `"GetJob" <${GMAIL_USER}>`,
+        to: options.to,
+        subject: options.subject,
+        html: options.html,
+      });
+      console.log(`✅ Email sent via Nodemailer to ${options.to}`);
+    } catch (error) {
+      console.error('❌ Failed to send email via Nodemailer:', error);
+      throw error;
+    }
+  }
+};
+
 export const sendTwoFACode = async (
   email: string,
   code: string
 ): Promise<void> => {
   // Fire and forget - don't wait for email to send
-  transporter.sendMail({
-    from: `"Your App" <${GMAIL_USER}>`,
+  sendEmail({
     to: email,
     subject: "Your Two-Factor Authentication Code",
     html: `
@@ -64,8 +108,7 @@ export const sendVerificationEmail = async (
   const verificationUrl = `${APP_ORIGIN}/confirm-account?code=${verificationCode}`;
 
   // Fire and forget - don't wait for email to send
-  transporter.sendMail({
-    from: `"Your App" <${GMAIL_USER}>`,
+  sendEmail({
     to: email,
     subject: "Email Verification",
     html: `
@@ -99,8 +142,7 @@ export const sendForgotPasswordEmail = async (
 
 export const sendMagicLoginEmail = async (email: string, url: string) => {
   // Fire and forget - don't wait for email to send
-  transporter.sendMail({
-    from: `"GetJob" <${GMAIL_USER}>`,
+  sendEmail({
     to: email,
     subject: "Masuk ke GetJob",
     html: `
@@ -186,17 +228,16 @@ export const sendMagicLoginEmail = async (email: string, url: string) => {
 
 export const sendMagicRegisterEmail = async (email: string, url: string) => {
   // Fire and forget - don't wait for email to send
-  transporter.sendMail({
-    from: `"GetJob" <${GMAIL_USER}>`,
+  sendEmail({
     to: email,
-    subject: "Masuk ke GetJob GetJob",
+    subject: "Selamat Datang di GetJob",
     html: `
       <!DOCTYPE html>
       <html lang="id">
       <head>
           <meta charset="UTF-8">
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <title>Masuk ke GetJob GetJob</title>
+          <title>Selamat Datang di GetJob</title>
           <style>
               * { margin:0; padding:0; box-sizing:border-box; }
               body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color:#f5f5f5; padding:20px; }
@@ -234,7 +275,7 @@ export const sendMagicRegisterEmail = async (email: string, url: string) => {
           <div class="email-container">
               <div class="header">
                   <img src="https://i.imgur.com/placeholder-logo.png" alt="GetJob Logo" class="logo">
-                  <h1 class="title">Masuk ke GetJob</h1>
+                  <h1 class="title">Selamat Datang di GetJob</h1>
               </div>
               
               <div class="divider"></div>
