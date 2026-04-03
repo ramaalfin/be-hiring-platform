@@ -1,6 +1,5 @@
 import "dotenv/config";
 import express from "express";
-// import connectToDatabase from "./config/db";
 import { APP_ORIGIN, NODE_ENV, PORT } from "./constants/env";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -11,8 +10,13 @@ import userRoutes from "./routes/user.route";
 import sessionRoutes from "./routes/session.route";
 import jobsRoutes from "./routes/jobs.route";
 import applicationsRoutes from "./routes/applicant.route";
+import { requestLogger } from "./middleware/requestLogger";
+import { logger } from "./utils/logger";
 
 const app = express();
+
+// Request logging
+app.use(requestLogger);
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -44,5 +48,5 @@ app.use("/api/v1/applications", applicationsRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, async () => {
-  console.log(`Server running at ${PORT} in ${NODE_ENV} mode`);
+  logger.info(`Server running at ${PORT || 5000} in ${NODE_ENV} mode`, "SERVER");
 });

@@ -1,29 +1,17 @@
-import { NOT_FOUND, OK } from "../constants/http";
+import { NOT_FOUND, OK, UNAUTHORIZED } from "../constants/http";
 import appAssert from "../utils/appAssert";
 import catchErrors from "../utils/catchErros";
 import { getUserService } from "../services/user.service";
 
 export const getUserController = catchErrors(async (req, res) => {
-  // const user = await UserModel.findById(req.userId);
-  // const user = await prisma.user.findUnique({
-  //   where: { id: req.userId.toString() },
-  //   select: {
-  //     id: true,
-  //     fullName: true,
-  //     email: true,
-  //     createdAt: true,
-  //     updatedAt: true,
-  //   },
-  // });
+  const userId = req.userId;
+
+  appAssert(userId, UNAUTHORIZED, "User not authenticated");
 
   try {
-    const userId = String(req.userId.toString());
-    const user = await getUserService(userId);
+    const user = await getUserService(userId.toString());
 
-    if (!user) {
-      appAssert(user, NOT_FOUND, "User not found");
-      return;
-    }
+    appAssert(user, NOT_FOUND, "User not found");
 
     return res.json({ user });
   } catch (error) {

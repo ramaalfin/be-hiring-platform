@@ -8,20 +8,23 @@ import {
 } from "../controllers/application.controller";
 import { uploadPhoto } from "../middleware/uploadPhotos";
 import authenticate from "../middleware/authenticate";
+import { apiRateLimiter } from "../middleware/rateLimiter";
 
 const applicationsRoutes = express.Router();
 
-// User (Job Seeker) apply job dengan foto profile
+// ✅ Add rate limiting
 applicationsRoutes.post(
     "/:jobId/apply",
+    apiRateLimiter,
     authenticate,
     authorizeRole(["CANDIDATE"]),
-    uploadPhoto.single("photoProfile"), // field name sama seperti di form
+    uploadPhoto.single("photoProfile"),
     applyJobController
 );
 
 applicationsRoutes.get(
     "/admin/:jobId",
+    apiRateLimiter,
     authenticate,
     authorizeRole(["ADMIN"]),
     getApplicationsByAdminController
@@ -29,11 +32,18 @@ applicationsRoutes.get(
 
 applicationsRoutes.get(
     "/user/:userId",
+    apiRateLimiter,
     authenticate,
     authorizeRole(["CANDIDATE"]),
     getApplicationsByUserController
 );
 
-applicationsRoutes.get("/", getAllApplicationsController);
+applicationsRoutes.get(
+    "/",
+    apiRateLimiter,
+    authenticate,
+    authorizeRole(["ADMIN"]),
+    getAllApplicationsController
+);
 
 export default applicationsRoutes;

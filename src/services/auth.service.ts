@@ -239,9 +239,8 @@ export const forgotPasswordService = async (email: string) => {
     },
   });
 
-  const url = `${APP_ORIGIN}/reset-password?code=${
-    verificationCode.id
-  }&expiresAt=${expiresAt.getTime()}`;
+  const url = `${APP_ORIGIN}/reset-password?code=${verificationCode.id
+    }&expiresAt=${expiresAt.getTime()}`;
 
   await sendForgotPasswordEmail(email, url);
 
@@ -309,6 +308,7 @@ export const verifyMagicLoginService = async (code: string) => {
     where: {
       id: code,
       type: VerificationCodeType.MagicLogin,
+      expiresAt: { gt: new Date() },
     },
   });
 
@@ -319,6 +319,7 @@ export const verifyMagicLoginService = async (code: string) => {
   });
   appAssert(user, NOT_FOUND, "User not found");
 
+  // ✅ FIX: Delete verification code after use
   await prisma.verificationCode.delete({ where: { id: validCode.id } });
 
   const session = await prisma.session.create({
@@ -373,6 +374,7 @@ export const verifyMagicRegisterService = async (code: string) => {
     where: {
       id: code,
       type: VerificationCodeType.MagicRegister,
+      expiresAt: { gt: new Date() },
     },
   });
   appAssert(validCode, UNAUTHORIZED, "Link expired or invalid");
@@ -394,7 +396,8 @@ export const verifyMagicRegisterService = async (code: string) => {
     role: user.role,
   });
 
-  // await prisma.verificationCode.delete({ where: { id: validCode.id } });
+  // ✅ FIX: Delete verification code after use
+  await prisma.verificationCode.delete({ where: { id: validCode.id } });
 
   const { password: _, ...userWithoutPassword } = user;
 

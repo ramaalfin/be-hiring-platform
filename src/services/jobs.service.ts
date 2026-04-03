@@ -5,32 +5,11 @@ import {
   NOT_FOUND,
   UNAUTHORIZED,
   OK,
+  FORBIDDEN,
 } from "../constants/http";
+import { CreateJobDTO, UpdateJobDTO, ProfileRequirements } from "../types/api.types";
 
-type ProfileFieldStatus = "MANDATORY" | "OPTIONAL" | "OFF";
-
-interface ProfileRequirements {
-  fullName: ProfileFieldStatus;
-  photoProfile: ProfileFieldStatus;
-  gender: ProfileFieldStatus;
-  domicile: ProfileFieldStatus;
-  email: ProfileFieldStatus;
-  phoneNumber: ProfileFieldStatus;
-  linkedinLink: ProfileFieldStatus;
-  dateOfBirth: ProfileFieldStatus;
-}
-
-interface JobPayload {
-  jobName: string;
-  jobType: string;
-  jobDescription: string;
-  numberOfCandidateNeeded: number;
-  minimumSalary: string;
-  maximumSalary: string;
-  minimumProfileInformationRequired: ProfileRequirements;
-}
-
-export const createJobService = async (userId: string, payload: JobPayload) => {
+export const createJobService = async (userId: string, payload: CreateJobDTO) => {
   try {
     const newJob = await prisma.job.create({
       data: {
@@ -57,69 +36,30 @@ export const createJobService = async (userId: string, payload: JobPayload) => {
   }
 };
 
-// services/jobService.ts
-export const createJobServiceNew = async (userId: string, payload: JobPayload) => {
-  try {
-    // Validation
-    if (!payload.jobName || !payload.jobType) {
-      console.error('Validation failed: Missing required fields');
-      throw new Error('Missing required fields');
-    }
-
-    // Convert salary to numbers if they're strings
-    const minimumSalary = typeof payload.minimumSalary === 'string'
-      ? parseInt(payload.minimumSalary)
-      : payload.minimumSalary;
-
-    const maximumSalary = typeof payload.maximumSalary === 'string'
-      ? parseInt(payload.maximumSalary)
-      : payload.maximumSalary;
-
-    const newJob = await prisma.job.create({
-      data: {
-        jobName: payload.jobName,
-        jobType: payload.jobType,
-        jobDescription: payload.jobDescription || '', // Default jika undefined
-        numberOfCandidateNeeded: payload.numberOfCandidateNeeded || 1,
-        minimumSalary: minimumSalary.toString(),
-        maximumSalary: maximumSalary.toString(),
-        minimumProfileInformationRequired:
-          payload.minimumProfileInformationRequired as unknown as object,
-        createdBy: userId,
-      },
-    });
-
-    return {
-      status: OK,
-      message: "Job created successfully",
-      data: newJob,
-    };
-  } catch (error) {
-    // Return error response yang proper
-    throw {
-      status: INTERNAL_SERVER_ERROR,
-      message: error instanceof Error ? error.message : "Failed to create job",
-      details: error
-    };
-  }
-};
-
-export const updateJobService = async (jobId: string, payload: JobPayload) => {
+export const updateJobService = async (jobId: string, userId: string, payload: UpdateJobDTO) => {
   try {
     const existingJob = await prisma.job.findUnique({ where: { id: jobId } });
     appAssert(existingJob, NOT_FOUND, "Job not found");
 
+    // ✅ FIX IDOR: Validasi ownership
+    appAssert(
+      existingJob.createdBy === userId,
+      FORBIDDEN,
+      "You don't have permission to update this job"
+    );
+
     const updated = await prisma.job.update({
       where: { id: jobId },
       data: {
-        jobName: payload.jobName,
-        jobType: payload.jobType,
-        jobDescription: payload.jobDescription,
-        numberOfCandidateNeeded: payload.numberOfCandidateNeeded,
-        minimumSalary: payload.minimumSalary,
-        maximumSalary: payload.maximumSalary,
-        minimumProfileInformationRequired:
-          payload.minimumProfileInformationRequired as unknown as object,
+        ...(payload.jobName && { jobName: payload.jobName }),
+        ...(payload.jobType && { jobType: payload.jobType }),
+        ...(payload.jobDescription && { jobDescription: payload.jobDescription }),
+        ...(payload.numberOfCandidateNeeded && { numberOfCandidateNeeded: payload.numberOfCandidateNeeded }),
+        ...(payload.minimumSalary && { minimumSalary: payload.minimumSalary }),
+        ...(payload.maximumSalary && { maximumSalary: payload.maximumSalary }),
+        ...(payload.minimumProfileInformationRequired && {
+          minimumProfileInformationRequired: payload.minimumProfileInformationRequired as unknown as object,
+        }),
       },
     });
 
@@ -130,7 +70,7 @@ export const updateJobService = async (jobId: string, payload: JobPayload) => {
     };
   } catch (error) {
     console.error("Error updating job:", error);
-    appAssert(false, INTERNAL_SERVER_ERROR, "Failed to update job");
+    throw error;
   }
 };
 
@@ -145,13 +85,11 @@ export const getAllJobsService = async (req: any) => {
       jobType,
     } = req.query;
 
-    const userId = req?.user?.id;
+    const userId = req?.userId;
     const skip = (Number(page) - 1) * Number(limit);
     const take = Number(limit);
 
-    const where: any = {
-      createdBy: req?.user?.id,
-    };
+    const where: any = {};
 
     if (search) {
       where.OR = [
@@ -171,10 +109,12 @@ export const getAllJobsService = async (req: any) => {
           createdByUser: {
             select: { id: true, fullName: true, email: true },
           },
-          applications: {
-            where: { userId }, // ⬅️ filter aplikasi oleh user login
-            select: { id: true },
-          },
+          ...(userId && {
+            applications: {
+              where: { userId },
+              select: { id: true },
+            },
+          }),
         },
         orderBy: { [sortBy]: order },
         skip,
@@ -185,7 +125,8 @@ export const getAllJobsService = async (req: any) => {
 
     const jobsWithApplyStatus = jobs.map((job) => ({
       ...job,
-      hasApplied: job.applications.length > 0,
+      hasApplied: userId ? job.applications && job.applications.length > 0 : false,
+      applications: undefined, // Remove from response
     }));
 
     const totalPages = Math.ceil(total / take);
@@ -209,83 +150,22 @@ export const getAllJobsService = async (req: any) => {
   }
 };
 
-// export const getJobByAdminService = async (adminId: string, query: any) => {
-//     try {
-//         const {
-//             page = 1,
-//             limit = 10,
-//             sortBy = "createdAt",
-//             order = "desc",
-//             jobType,
-//             search,
-//         } = query;
-
-//         const skip = (Number(page) - 1) * Number(limit);
-//         const take = Number(limit);
-
-//         const where: any = {
-//             createdBy: adminId,
-//         };
-
-//         if (jobType) {
-//             where.jobType = jobType;
-//         }
-
-//         if (search) {
-//             where.OR = [
-//                 { jobName: { contains: search, mode: "insensitive" } },
-//                 { jobDescription: { contains: search, mode: "insensitive" } },
-//             ];
-//         }
-
-//         const [jobs, total] = await Promise.all([
-//             prisma.job.findMany({
-//                 where,
-//                 include: {
-//                     createdByUser: {
-//                         select: {
-//                             id: true,
-//                             fullName: true,
-//                             email: true,
-//                         },
-//                     },
-//                 },
-//                 orderBy: { [sortBy]: order },
-//                 skip,
-//                 take,
-//             }),
-//             prisma.job.count({ where }),
-//         ]);
-
-//         const totalPages = Math.ceil(total / take);
-
-//         return {
-//             status: OK,
-//             message: "Jobs fetched successfully",
-//             data: jobs,
-//             meta: {
-//                 total,
-//                 page: Number(page),
-//                 limit: Number(limit),
-//                 totalPages,
-//                 sortBy,
-//                 order,
-//             },
-//         };
-//     } catch (error) {
-//         console.error("Error fetching jobs by admin:", error);
-//         appAssert(false, INTERNAL_SERVER_ERROR, "Failed to fetch jobs");
-//     }
-// };
-
 export const getJobByAdminService = async (
   adminId: string,
+  requestUserId: string,
   search: string,
   sortBy: string,
   page: number,
   limit: number
 ) => {
   try {
+    // ✅ FIX IDOR: Validasi bahwa request user adalah admin yang sama
+    appAssert(
+      adminId === requestUserId,
+      FORBIDDEN,
+      "You can only view your own jobs"
+    );
+
     const skip = (page - 1) * limit;
 
     const whereClause: any = {
@@ -319,12 +199,14 @@ export const getJobByAdminService = async (
 
     const totalCount = await prisma.job.count({ where: whereClause });
 
-    // 📦 Fetch paginated data
     const jobs = await prisma.job.findMany({
       where: whereClause,
       include: {
         createdByUser: {
           select: { id: true, fullName: true, email: true },
+        },
+        _count: {
+          select: { applications: true },
         },
       },
       orderBy,
@@ -342,7 +224,7 @@ export const getJobByAdminService = async (
     return { jobs, totalCount, meta };
   } catch (error) {
     console.error("Error fetching jobs:", error);
-    appAssert(false, INTERNAL_SERVER_ERROR, "Failed to fetch jobs");
+    throw error;
   }
 };
 
@@ -353,6 +235,9 @@ export const getJobByIdService = async (id: string) => {
       include: {
         createdByUser: {
           select: { id: true, fullName: true, email: true },
+        },
+        _count: {
+          select: { applications: true },
         },
       },
     });
@@ -366,7 +251,7 @@ export const getJobByIdService = async (id: string) => {
     };
   } catch (error) {
     console.error("Error fetching job by id:", error);
-    appAssert(false, INTERNAL_SERVER_ERROR, "Failed to fetch job");
+    throw error;
   }
 };
 
@@ -375,11 +260,11 @@ export const deleteJobService = async (id: string, userId: string) => {
     const existingJob = await prisma.job.findUnique({ where: { id } });
     appAssert(existingJob, NOT_FOUND, "Job not found");
 
-    // Pastikan hanya pembuat job yang boleh menghapus
+    // ✅ FIX IDOR: Pastikan hanya pembuat job yang boleh menghapus
     appAssert(
       existingJob.createdBy === userId,
-      UNAUTHORIZED,
-      "You are not authorized to delete this job"
+      FORBIDDEN,
+      "You don't have permission to delete this job"
     );
 
     const deleted = await prisma.job.delete({ where: { id } });
@@ -391,6 +276,6 @@ export const deleteJobService = async (id: string, userId: string) => {
     };
   } catch (error) {
     console.error("Error deleting job:", error);
-    appAssert(false, INTERNAL_SERVER_ERROR, "Failed to delete job");
+    throw error;
   }
 };

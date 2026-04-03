@@ -32,7 +32,10 @@ model Session {
   expiresAt DateTime? @default(dbgenerated("(now() + '30 days'::interval)"))
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
-  user      User      @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model VerificationCode {
@@ -41,7 +44,12 @@ model VerificationCode {
   type      String
   expiresAt DateTime
   createdAt DateTime
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([expiresAt])
+  @@index([userId, type])
 }
 
 model Job {
@@ -57,7 +65,12 @@ model Job {
   createdAt                         DateTime      @default(now())
   updatedAt                         DateTime      @updatedAt
   applications                      Application[]
-  createdByUser                     User          @relation(fields: [createdBy], references: [id])
+  createdByUser                     User          @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+
+  @@index([createdBy])
+  @@index([jobType])
+  @@index([createdAt])
+  @@index([createdBy, createdAt])
 }
 
 model Application {
@@ -66,8 +79,13 @@ model Application {
   userId    String
   resume    Json
   createdAt DateTime @default(now())
-  job       Job      @relation(fields: [jobId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, userId])
+  @@index([jobId])
+  @@index([userId])
+  @@index([createdAt])
 }
 
 enum Role {

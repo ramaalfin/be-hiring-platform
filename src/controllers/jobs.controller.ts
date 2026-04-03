@@ -1,4 +1,4 @@
-import { OK, CREATED, NOT_FOUND, FORBIDDEN } from "../constants/http";
+import { OK, CREATED, BAD_REQUEST, UNAUTHORIZED } from "../constants/http";
 import appAssert from "../utils/appAssert";
 import catchErrors from "../utils/catchErros";
 import {
@@ -8,68 +8,31 @@ import {
   getJobByIdService,
   deleteJobService,
   getJobByAdminService,
-  createJobServiceNew,
 } from "../services/jobs.service";
+import { ApiResponseHelper } from "../utils/apiResponse";
 
 export const createJobController = catchErrors(async (req, res) => {
-  const { userId } = req;
+  const userId = req.userId;
+
+  appAssert(userId, UNAUTHORIZED, "User not authenticated");
+
   const data = req.body;
+  const result = await createJobService(userId.toString(), data);
 
-  const newJob = await createJobService(userId.toString(), data);
-  return res.status(CREATED).json({ job: newJob });
+  return ApiResponseHelper.success(res, result.data, result.message, CREATED);
 });
-
-export const createJobControllerNew = catchErrors(async (req, res) => {
-  // Jika ada middleware auth, gunakan userId dari auth
-  const { userId } = req;
-  const data = req.body;
-
-  // Jika tidak ada userId dari auth, coba ambil dari body (untuk development)
-  let createdByUserId = userId;
-
-  if (!createdByUserId && data.createdBy) {
-    createdByUserId = data.createdBy;
-  }
-
-  if (!createdByUserId) {
-    return res.status(401).json({
-      success: false,
-      error: "Unauthorized: No user ID provided"
-    });
-  }
-
-  try {
-    // Hapus createdBy dari data sebelum dikirim ke service
-    const { createdBy, ...jobData } = data;
-
-    const newJob = await createJobService(createdByUserId.toString(), jobData);
-
-    return res.status(CREATED).json({
-      success: true,
-      message: newJob.message,
-      data: newJob.data,
-      timestamp: new Date().toISOString()
-    });
-  } catch (error: any) {
-    console.error('Controller error:', error);
-
-    return res.status(error.status || 500).json({
-      success: false,
-      error: error.message || "Internal server error",
-      details: process.env.NODE_ENV === 'development' ? error.details : undefined
-    });
-  }
-
-});
-
 
 export const updateJobController = catchErrors(async (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id;
+  const userId = req.userId;
   const data = req.body;
 
-  const updated = await updateJobService(id, data);
+  appAssert(typeof id === "string", BAD_REQUEST, "Invalid job ID");
+  appAssert(userId, UNAUTHORIZED, "User not authenticated");
 
-  return res.status(OK).json({ job: updated });
+  const result = await updateJobService(id, userId.toString(), data);
+
+  return ApiResponseHelper.success(res, result.data, result.message);
 });
 
 export const getAllJobsController = catchErrors(async (req, res) => {
@@ -78,14 +41,18 @@ export const getAllJobsController = catchErrors(async (req, res) => {
 });
 
 export const getJobByIdController = catchErrors(async (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id;
+
+  appAssert(typeof id === "string", BAD_REQUEST, "Invalid job ID");
 
   const result = await getJobByIdService(id);
-  return res.status(result.status).json(result);
+
+  return ApiResponseHelper.success(res, result.data, result.message);
 });
 
 export const getAllJobsByAdminController = catchErrors(async (req, res) => {
-  const { id } = req.params;
+  const id = req.params.id;
+  const requestUserId = req.userId;
 
   const {
     search = "",
@@ -94,31 +61,42 @@ export const getAllJobsByAdminController = catchErrors(async (req, res) => {
     limit = "10",
   } = req.query;
 
-  if (req.userId.toString() !== id) {
-    return res
-      .status(FORBIDDEN)
-      .json({ message: "You are not allowed to view other admin's jobs" });
-  }
+  appAssert(typeof id === "string", BAD_REQUEST, "Invalid admin ID");
+  appAssert(requestUserId, UNAUTHORIZED, "User not authenticated");
 
   const { jobs, totalCount, meta } = await getJobByAdminService(
     id,
+    requestUserId.toString(),
     search as string,
     sortBy as string,
     Number(page),
     Number(limit)
   );
 
-  return res.status(OK).json({
-    status: "success",
-    message: "Jobs retrieved successfully",
-    data: jobs,
-    meta,
-  });
+  return ApiResponseHelper.success(
+    res,
+    jobs,
+    "Jobs retrieved successfully",
+    OK,
+    {
+      total: meta.totalCount,
+      page: meta.currentPage,
+      limit: meta.limit,
+      totalPages: meta.totalPages,
+      hasNextPage: meta.currentPage < meta.totalPages,
+      hasPrevPage: meta.currentPage > 1,
+    }
+  );
 });
 
 export const deleteJobController = catchErrors(async (req, res) => {
-  const { id, userId } = req.params;
-  const deletedJob = await deleteJobService(id, userId);
-  appAssert(deletedJob, NOT_FOUND, "Job not found");
-  return res.status(OK).json({ message: "Job deleted successfully" });
+  const id = req.params.id;
+  const userId = req.userId;
+
+  appAssert(typeof id === "string", BAD_REQUEST, "Invalid job ID");
+  appAssert(userId, UNAUTHORIZED, "User not authenticated");
+
+  const result = await deleteJobService(id, userId.toString());
+
+  return ApiResponseHelper.success(res, null, result.message);
 });

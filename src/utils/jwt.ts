@@ -1,6 +1,4 @@
 import { SignOptions, VerifyOptions } from "jsonwebtoken";
-// import { SessionDocument } from "../model/session.model";
-// import { UserDocument } from "../model/user.model";
 import { JWT_REFRESH_SECRET, JWT_SECRET } from "../constants/env";
 import jwt from "jsonwebtoken";
 import prisma from "../prisma/client";
@@ -12,13 +10,13 @@ export type RefreshTokenPayload = {
 export type AccessTokenPayload = {
   userId: string;
   sessionId: string;
-  role: any;
+  role: "ADMIN" | "CANDIDATE";
 };
 
 type SignOptionsAndSecret = SignOptions & { secret: string };
 
 const defaults: SignOptions = {
-  audience: ["user"],
+  audience: "user",
 };
 
 const access_tokenSignOptions: SignOptionsAndSecret = {
@@ -41,16 +39,16 @@ export const signToken = (
 
 export const verifyToken = <TPayload extends object = AccessTokenPayload>(
   token: string,
-  options?: VerifyOptions & { secret: string }
+  options?: VerifyOptions & { secret?: string }
 ) => {
   const { secret = JWT_SECRET, ...verifyOpts } = options || {};
   try {
-    const payload = jwt.verify(token, secret, {
-      ...defaults,
+    const decoded = jwt.verify(token, secret, {
+      audience: "user",
       ...verifyOpts,
-    }) as TPayload;
+    });
 
-    return { payload };
+    return { payload: decoded as TPayload };
   } catch (error: any) {
     return {
       error: error.message,
@@ -74,7 +72,7 @@ export const generateUserTokens = async (userId: string) => {
   const access_token = signToken({
     ...sessionInfo,
     userId,
-    role: user?.role,
+    role: user?.role || "CANDIDATE",
   });
 
   return { access_token, refresh_token };

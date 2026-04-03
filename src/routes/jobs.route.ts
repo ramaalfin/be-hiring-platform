@@ -6,21 +6,48 @@ import {
     getJobByIdController,
     deleteJobController,
     getAllJobsByAdminController,
-    createJobControllerNew,
 } from "../controllers/jobs.controller";
 import authenticate from "../middleware/authenticate";
 import { authorizeRole } from "../middleware/authorizeRole";
+import { apiRateLimiter } from "../middleware/rateLimiter";
 
 const jobsRoutes = Router();
 
-// jobsRoutes.post("/", authenticate, authorizeRole(["ADMIN"]), createJobController);
-jobsRoutes.post("/", createJobControllerNew);
-jobsRoutes.patch("/:id", authenticate, authorizeRole(["ADMIN"]), updateJobController);
-jobsRoutes.get("/admin/:id", authenticate, authorizeRole(["ADMIN"]), getAllJobsByAdminController);
-// jobsRoutes.get("/", authenticate, getAllJobsController);
-jobsRoutes.get("/", getAllJobsController);
-// jobsRoutes.get("/:id", authenticate, getJobByIdController);
-jobsRoutes.get("/:id", getJobByIdController);
-jobsRoutes.delete("/:id", authenticate, authorizeRole(["ADMIN"]), deleteJobController);
+// ✅ FIX: Add authentication to all routes
+jobsRoutes.post(
+    "/",
+    apiRateLimiter,
+    authenticate,
+    authorizeRole(["ADMIN"]),
+    createJobController
+);
+
+jobsRoutes.patch(
+    "/:id",
+    apiRateLimiter,
+    authenticate,
+    authorizeRole(["ADMIN"]),
+    updateJobController
+);
+
+jobsRoutes.get(
+    "/admin/:id",
+    apiRateLimiter,
+    authenticate,
+    authorizeRole(["ADMIN"]),
+    getAllJobsByAdminController
+);
+
+jobsRoutes.get("/", apiRateLimiter, getAllJobsController);
+
+jobsRoutes.get("/:id", apiRateLimiter, getJobByIdController);
+
+jobsRoutes.delete(
+    "/:id",
+    apiRateLimiter,
+    authenticate,
+    authorizeRole(["ADMIN"]),
+    deleteJobController
+);
 
 export default jobsRoutes;

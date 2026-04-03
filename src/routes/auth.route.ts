@@ -14,20 +14,22 @@ import {
   verifyMagicRegisterController,
 } from "../controllers/auth.controller";
 import authenticate from "../middleware/authenticate";
+import { authRateLimiter, strictRateLimiter, apiRateLimiter } from "../middleware/rateLimiter";
 
 const authRoutes = Router();
 
-authRoutes.post("/register", registerController);
-authRoutes.post("/login", loginController);
-authRoutes.get("/logout", logoutController);
-authRoutes.post("/refresh", refreshController);
-authRoutes.post("/email/verify", verifyEmailController);
-authRoutes.post("/password/forgot", forgotPasswordController);
-authRoutes.post("/password/reset", resetPasswordController);
-authRoutes.post("/magic-login", sendMagicLoginController);
-authRoutes.get("/magic-login/verify", verifyMagicLoginController);
-authRoutes.post("/magic-register", sendMagicRegisterController);
-authRoutes.get("/magic-register/verify", verifyMagicRegisterController);
-authRoutes.get("/me", authenticate, meController);
+// ✅ Add rate limiting to auth routes
+authRoutes.post("/register", authRateLimiter, registerController);
+authRoutes.post("/login", authRateLimiter, loginController);
+authRoutes.get("/logout", apiRateLimiter, logoutController);
+authRoutes.post("/refresh", apiRateLimiter, refreshController);
+authRoutes.post("/email/verify", apiRateLimiter, verifyEmailController);
+authRoutes.post("/password/forgot", strictRateLimiter, forgotPasswordController);
+authRoutes.post("/password/reset", authRateLimiter, resetPasswordController);
+authRoutes.post("/magic-login", strictRateLimiter, sendMagicLoginController);
+authRoutes.get("/magic-login/verify", apiRateLimiter, verifyMagicLoginController);
+authRoutes.post("/magic-register", strictRateLimiter, sendMagicRegisterController);
+authRoutes.get("/magic-register/verify", apiRateLimiter, verifyMagicRegisterController);
+authRoutes.get("/me", apiRateLimiter, authenticate, meController);
 
 export default authRoutes;
