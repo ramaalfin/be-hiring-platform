@@ -1,0 +1,13 @@
+node_modules
+.git
+.env.example
+*.md
+test-magic-link.sh
+test-magic-link.html
+check-verification-codes.sql
+DEBUGGING_GUIDE.md
+SOLUTION.md
+REAL_FIX.md
+FINAL_SOLUTION_SUMMARY.md
+MAGIC_LINK_FINAL_FIX.md
+MAGIC_LINK_FIX.md
