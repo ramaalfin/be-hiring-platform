@@ -17,6 +17,7 @@ model User {
   twoFAEmailCode String?
   twoFAExpiresAt DateTime?
   role           Role               @default(CANDIDATE)
+  isDefaultPassword Boolean         @default(false)
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
   applications   Application[]

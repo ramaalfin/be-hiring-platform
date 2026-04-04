@@ -350,6 +350,7 @@ export const sendMagicRegisterService = async (email: string) => {
       fullName: "",
       verified: false,
       password,
+      isDefaultPassword: true,
     },
   });
 
