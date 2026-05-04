@@ -10,7 +10,7 @@ export type RefreshTokenPayload = {
 export type AccessTokenPayload = {
   userId: string;
   sessionId: string;
-  role: "ADMIN" | "CANDIDATE";
+  role: "ADMIN" | "CANDIDATE" | "EMPLOYER";
 };
 
 type SignOptionsAndSecret = SignOptions & { secret: string };

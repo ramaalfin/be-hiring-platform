@@ -32,7 +32,7 @@ export interface UserDTO {
     id: string;
     fullName: string;
     email: string;
-    role: "ADMIN" | "CANDIDATE";
+    role: "ADMIN" | "CANDIDATE" | "EMPLOYER";
     verified: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -83,6 +83,23 @@ export interface CreateJobDTO {
 }
 
 export interface UpdateJobDTO extends Partial<CreateJobDTO> { }
+
+// Employer Job Types
+export interface JobFilters {
+    search?: string;
+    jobType?: string;
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    order?: "asc" | "desc";
+}
+
+export interface EmployerJobDTO extends JobDTO {
+    employerId: string;
+    _count?: {
+        applications: number;
+    };
+}
 
 // Application Types
 export interface ResumeData {

@@ -6,8 +6,9 @@ import {
   UNAUTHORIZED,
   OK,
   FORBIDDEN,
+  CREATED,
 } from "../constants/http";
-import { CreateJobDTO, UpdateJobDTO, ProfileRequirements } from "../types/api.types";
+import { CreateJobDTO, UpdateJobDTO, ProfileRequirements, JobFilters } from "../types/api.types";
 
 export const createJobService = async (userId: string, payload: CreateJobDTO) => {
   try {
@@ -276,6 +277,167 @@ export const deleteJobService = async (id: string, userId: string) => {
     };
   } catch (error) {
     console.error("Error deleting job:", error);
+    throw error;
+  }
+};
+
+// ─── Employer Job Methods ────────────────────────────────────────────────────
+
+export const createJobAsEmployer = async (userId: string, jobData: CreateJobDTO) => {
+  try {
+    const newJob = await prisma.job.create({
+      data: {
+        jobName: jobData.jobName,
+        jobType: jobData.jobType,
+        jobDescription: jobData.jobDescription,
+        numberOfCandidateNeeded: jobData.numberOfCandidateNeeded,
+        minimumSalary: jobData.minimumSalary,
+        maximumSalary: jobData.maximumSalary,
+        minimumProfileInformationRequired:
+          jobData.minimumProfileInformationRequired as unknown as object,
+        createdBy: userId,
+        employerId: userId,
+      },
+    });
+
+    return {
+      status: CREATED,
+      message: "Job created successfully",
+      data: newJob,
+    };
+  } catch (error) {
+    console.error("Error creating employer job:", error);
+    appAssert(false, INTERNAL_SERVER_ERROR, "Failed to create job");
+  }
+};
+
+export const getEmployerJobs = async (userId: string, filters?: JobFilters) => {
+  try {
+    const {
+      page = 1,
+      limit = 20,
+      sortBy = "createdAt",
+      order = "desc",
+      search,
+      jobType,
+    } = filters || {};
+
+    const skip = (Number(page) - 1) * Number(limit);
+    const take = Number(limit);
+
+    const where: any = {
+      employerId: userId,
+    };
+
+    if (search) {
+      where.OR = [
+        { jobName: { contains: search, mode: "insensitive" } },
+        { jobDescription: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    if (jobType) {
+      where.jobType = jobType;
+    }
+
+    const [jobs, total] = await Promise.all([
+      prisma.job.findMany({
+        where,
+        include: {
+          _count: {
+            select: { applications: true },
+          },
+        },
+        orderBy: { [sortBy]: order },
+        skip,
+        take,
+      }),
+      prisma.job.count({ where }),
+    ]);
+
+    const totalPages = Math.ceil(total / take);
+
+    return {
+      status: OK,
+      message: "Jobs fetched successfully",
+      data: jobs,
+      meta: {
+        total,
+        page: Number(page),
+        limit: Number(limit),
+        totalPages,
+      },
+    };
+  } catch (error) {
+    console.error("Error fetching employer jobs:", error);
+    appAssert(false, INTERNAL_SERVER_ERROR, "Failed to fetch jobs");
+  }
+};
+
+export const updateEmployerJob = async (
+  jobId: string,
+  userId: string,
+  updates: UpdateJobDTO
+) => {
+  try {
+    const existingJob = await prisma.job.findUnique({ where: { id: jobId } });
+    appAssert(existingJob, NOT_FOUND, "Job not found");
+
+    appAssert(
+      existingJob.employerId === userId,
+      FORBIDDEN,
+      "You don't have permission to update this job"
+    );
+
+    const updated = await prisma.job.update({
+      where: { id: jobId },
+      data: {
+        ...(updates.jobName && { jobName: updates.jobName }),
+        ...(updates.jobType && { jobType: updates.jobType }),
+        ...(updates.jobDescription && { jobDescription: updates.jobDescription }),
+        ...(updates.numberOfCandidateNeeded && {
+          numberOfCandidateNeeded: updates.numberOfCandidateNeeded,
+        }),
+        ...(updates.minimumSalary && { minimumSalary: updates.minimumSalary }),
+        ...(updates.maximumSalary && { maximumSalary: updates.maximumSalary }),
+        ...(updates.minimumProfileInformationRequired && {
+          minimumProfileInformationRequired:
+            updates.minimumProfileInformationRequired as unknown as object,
+        }),
+      },
+    });
+
+    return {
+      status: OK,
+      message: "Job updated successfully",
+      data: updated,
+    };
+  } catch (error) {
+    console.error("Error updating employer job:", error);
+    throw error;
+  }
+};
+
+export const deleteEmployerJob = async (jobId: string, userId: string) => {
+  try {
+    const existingJob = await prisma.job.findUnique({ where: { id: jobId } });
+    appAssert(existingJob, NOT_FOUND, "Job not found");
+
+    appAssert(
+      existingJob.employerId === userId,
+      FORBIDDEN,
+      "You don't have permission to delete this job"
+    );
+
+    const deleted = await prisma.job.delete({ where: { id: jobId } });
+
+    return {
+      status: OK,
+      message: "Job deleted successfully",
+      data: deleted,
+    };
+  } catch (error) {
+    console.error("Error deleting employer job:", error);
     throw error;
   }
 };

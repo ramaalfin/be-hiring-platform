@@ -22,6 +22,8 @@ model User {
   updatedAt      DateTime           @updatedAt
   applications   Application[]
   jobs           Job[]
+  createdJobs    Job[]              @relation("EmployerJobs")
+  statusChanges  ApplicationStatusHistory[]
   sessions       Session[]
   verifications  VerificationCode[]
 }
@@ -63,33 +65,69 @@ model Job {
   maximumSalary                     String
   minimumProfileInformationRequired Json
   createdBy                         String
+  employerId                        String?
   createdAt                         DateTime      @default(now())
   updatedAt                         DateTime      @updatedAt
   applications                      Application[]
   createdByUser                     User          @relation(fields: [createdBy], references: [id], onDelete: Cascade)
+  employer                          User?         @relation("EmployerJobs", fields: [employerId], references: [id], onDelete: SetNull)
 
   @@index([createdBy])
+  @@index([employerId])
   @@index([jobType])
   @@index([createdAt])
   @@index([createdBy, createdAt])
+  @@index([employerId, createdAt])
 }
 
 model Application {
-  id        String   @id @default(uuid())
-  jobId     String
-  userId    String
-  resume    Json
-  createdAt DateTime @default(now())
-  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id             String                        @id @default(uuid())
+  jobId          String
+  userId         String
+  resume         Json
+  status         ApplicationStatus             @default(APPLIED)
+  notes          String?
+  createdAt      DateTime                      @default(now())
+  updatedAt      DateTime                      @updatedAt
+  job            Job                           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user           User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  statusHistory  ApplicationStatusHistory[]
 
   @@unique([jobId, userId])
   @@index([jobId])
   @@index([userId])
   @@index([createdAt])
+  @@index([jobId, status])
+  @@index([status])
+}
+
+model ApplicationStatusHistory {
+  id             String      @id @default(uuid())
+  applicationId  String
+  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  fromStatus     String
+  toStatus       String
+  changedBy      String
+  changedByUser  User        @relation(fields: [changedBy], references: [id], onDelete: Restrict)
+  changedAt      DateTime    @default(now())
+  reason         String?
+
+  @@unique([applicationId, changedAt])
+  @@index([applicationId])
+  @@index([changedAt])
 }
 
 enum Role {
   ADMIN
   CANDIDATE
+  EMPLOYER
+}
+
+enum ApplicationStatus {
+  APPLIED
+  SCREENING
+  INTERVIEW
+  OFFER
+  HIRED
+  REJECTED
 }
