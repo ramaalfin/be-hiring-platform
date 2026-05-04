@@ -1,0 +1,154 @@
+{
+  "specName": "GetJob Hiring Platform",
+  "specType": "system",
+  "version": "2.0.0",
+  "status": "production-ready",
+  "createdAt": "2026-05-04",
+  "lastUpdated": "2026-05-04",
+  "description": "Comprehensive specification for the GetJob hiring platform — a modern, full-stack hiring platform with passwordless authentication, role-based access control, and gesture-based document submission.",
+  "documents": {
+    "mission": {
+      "path": "mission.md",
+      "title": "Mission & Vision",
+      "description": "Product vision, target audience, success metrics, and value propositions"
+    },
+    "techStack": {
+      "path": "tech-stack.md",
+      "title": "Technology Stack",
+      "description": "All technologies, frameworks, infrastructure, and deployment platforms"
+    },
+    "roadmap": {
+      "path": "roadmap.md",
+      "title": "Development Roadmap",
+      "description": "Phases of development with deliverables, validation gates, and dependencies"
+    },
+    "requirements": {
+      "path": "requirements.md",
+      "title": "Functional & Non-Functional Requirements",
+      "description": "All requirements using RFC 2119 keywords, grouped by domain"
+    },
+    "scenarios": {
+      "path": "scenarios.md",
+      "title": "Acceptance Scenarios",
+      "description": "Gherkin-style GIVEN/WHEN/THEN scenarios for all critical requirements"
+    },
+    "validation": {
+      "path": "validation.md",
+      "title": "Validation & Definition of Done",
+      "description": "Test coverage, manual QA, security checks, performance benchmarks, and sign-off criteria"
+    },
+    "outOfScope": {
+      "path": "out-of-scope.md",
+      "title": "Out-of-Scope Items",
+      "description": "Explicitly excluded features with rationale and reconsidering criteria"
+    }
+  },
+  "keyMetrics": {
+    "authentication": "95%+ frictionless magic-link login",
+    "applicationCompletion": "80%+ completion rate",
+    "uptime": "99.5% availability",
+    "timeToHire": "40% reduction vs. traditional platforms",
+    "apiResponseTime": "<200ms (p95)",
+    "pageLoadTime": "<3 seconds",
+    "databaseQueryTime": "<50ms (p95)",
+    "testCoverage": ">80% for critical paths"
+  },
+  "phases": {
+    "phase1": {
+      "name": "MVP Foundation",
+      "status": "complete",
+      "version": "2.0.0",
+      "features": [
+        "Magic-link authentication",
+        "Email verification",
+        "Role-based access control",
+        "Job creation and management",
+        "Application submission with gesture-based photo capture",
+        "Rate limiting and IDOR protection",
+        "Cloudinary image hosting",
+        "Resend email service",
+        "Database seeding",
+        "Deployment to Railway and Vercel"
+      ]
+    },
+    "phase2": {
+      "name": "Enhanced Security & Compliance",
+      "status": "planned",
+      "estimatedDuration": "2-3 hours",
+      "features": [
+        "2FA (two-factor authentication)",
+        "Request signing for sensitive operations",
+        "Audit logging",
+        "CSRF protection",
+        "API key authentication",
+        "IP whitelisting",
+        "Session invalidation on password change",
+        "Security headers"
+      ]
+    },
+    "phase3": {
+      "name": "Automated Testing & CI/CD",
+      "status": "planned",
+      "estimatedDuration": "3-4 hours",
+      "features": [
+        "Unit tests (Jest)",
+        "Integration tests",
+        "E2E tests (Playwright)",
+        "GitHub Actions CI/CD",
+        "Test coverage enforcement",
+        "Performance benchmarks",
+        "Database migration testing"
+      ]
+    },
+    "phase4": {
+      "name": "Admin Dashboard & Analytics",
+      "status": "planned",
+      "estimatedDuration": "3-4 hours",
+      "features": [
+        "Job posting analytics",
+        "Application pipeline",
+        "Candidate search and filtering",
+        "Bulk actions",
+        "CSV export",
+        "Hiring funnel metrics",
+        "Recruiter performance metrics",
+        "Dashboard caching"
+      ]
+    },
+    "phase5": {
+      "name": "Candidate Portal Enhancements",
+      "status": "planned",
+      "estimatedDuration": "2-3 hours",
+      "features": [
+        "Saved jobs",
+        "Application status timeline",
+        "Email notifications on status changes",
+        "Application withdrawal",
+        "Recruiter feedback on rejections",
+        "Job recommendations",
+        "Profile updates without re-uploading",
+        "Similar job suggestions"
+      ]
+    }
+  },
+  "team": {
+    "productManager": "TBD",
+    "techLead": "TBD",
+    "qaLead": "TBD",
+    "developers": "TBD"
+  },
+  "repositories": {
+    "backend": "be-hiring-platform",
+    "frontend": "fe-hiring-platform"
+  },
+  "deployment": {
+    "backend": "Railway",
+    "frontend": "Vercel",
+    "database": "PostgreSQL (Railway managed)"
+  },
+  "externalServices": {
+    "email": "Resend (production) / Gmail (development)",
+    "imageHosting": "Cloudinary",
+    "monitoring": "Optional: Sentry, UptimeRobot"
+  }
+}
