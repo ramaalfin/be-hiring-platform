@@ -48,7 +48,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Test deleteEmployerJob validates ownership
   - _Requirements: 2.1, 2.3, 2.4_
 
-- [ ] 4. Implement Application service methods for status management
+- [x] 4. Implement Application service methods for status management
   - Create `updateApplicationStatus(appId: string, userId: string, newStatus: ApplicationStatus, reason?: string): Promise<Application>`
   - Create `getApplicationsByJob(jobId: string, userId: string): Promise<Record<ApplicationStatus, Application[]>>`
   - Create `getApplicationStatusHistory(appId: string, userId: string): Promise<ApplicationStatusHistory[]>`
@@ -77,7 +77,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Test addApplicationNote persists correctly
   - _Requirements: 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 5. Implement Search service with filters
+- [x] 5. Implement Search service with filters
   - Create `searchJobs(query: string, filters: SearchFilters, pagination: Pagination): Promise<SearchResult>`
   - Implement keyword search on jobName and jobDescription (case-insensitive)
   - Implement jobType filter

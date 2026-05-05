@@ -441,3 +441,66 @@ export const deleteEmployerJob = async (jobId: string, userId: string) => {
     throw error;
   }
 };
+
+// ─── Search Jobs ─────────────────────────────────────────────────────────────
+
+export const searchJobsService = async (
+  query: string,
+  filters: { jobType?: string; minSalary?: number; maxSalary?: number },
+  pagination: { page?: number; limit?: number }
+) => {
+  const page = Number(pagination.page) || 1;
+  const limit = Number(pagination.limit) || 20;
+  const skip = (page - 1) * limit;
+
+  const where: any = {};
+
+  // Keyword search on jobName and jobDescription (case-insensitive)
+  if (query && query.trim().length > 0) {
+    where.OR = [
+      { jobName: { contains: query.trim(), mode: "insensitive" } },
+      { jobDescription: { contains: query.trim(), mode: "insensitive" } },
+    ];
+  }
+
+  // jobType filter
+  if (filters.jobType) {
+    where.jobType = { equals: filters.jobType, mode: "insensitive" };
+  }
+
+  // Salary range filter — stored as strings, so we filter in-memory after fetch
+  // We fetch with a broad query and then apply numeric salary filtering
+  const [jobs, total] = await Promise.all([
+    prisma.job.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take: limit,
+    }),
+    prisma.job.count({ where }),
+  ]);
+
+  // Apply salary range filter if provided
+  const filtered =
+    filters.minSalary !== undefined || filters.maxSalary !== undefined
+      ? jobs.filter((job) => {
+        const min = parseFloat(job.minimumSalary.replace(/[^0-9.]/g, ""));
+        const max = parseFloat(job.maximumSalary.replace(/[^0-9.]/g, ""));
+        if (filters.minSalary !== undefined && max < filters.minSalary) return false;
+        if (filters.maxSalary !== undefined && min > filters.maxSalary) return false;
+        return true;
+      })
+      : jobs;
+
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    data: filtered,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages,
+    },
+  };
+};

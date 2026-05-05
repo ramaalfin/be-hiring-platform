@@ -10,6 +10,7 @@ import userRoutes from "./routes/user.route";
 import sessionRoutes from "./routes/session.route";
 import jobsRoutes from "./routes/jobs.route";
 import applicationsRoutes from "./routes/applicant.route";
+import employerRoutes from "./routes/employer.route";
 import { requestLogger } from "./middleware/requestLogger";
 import { logger } from "./utils/logger";
 
@@ -39,22 +40,22 @@ app.use(
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
-      
+
       // Check if origin is in allowed list
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      
+
       // Allow any vercel.app domain
       if (origin.endsWith('.vercel.app')) {
         return callback(null, true);
       }
-      
+
       // Allow any railway.app domain
       if (origin.endsWith('.railway.app')) {
         return callback(null, true);
       }
-      
+
       // Reject other origins
       callback(new Error('Not allowed by CORS'));
     },
@@ -73,6 +74,7 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/sessions", sessionRoutes);
 app.use("/api/v1/jobs", jobsRoutes);
 app.use("/api/v1/applications", applicationsRoutes);
+app.use("/api/v1/employer", employerRoutes);
 
 app.use(errorHandler);
 

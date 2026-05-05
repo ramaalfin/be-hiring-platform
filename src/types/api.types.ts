@@ -155,3 +155,59 @@ export interface AuthTokens {
 export interface AuthResponse extends AuthTokens {
     user: UserDTO;
 }
+
+// Application Status Types
+export type ApplicationStatus = "APPLIED" | "SCREENING" | "INTERVIEW" | "OFFER" | "HIRED" | "REJECTED";
+
+export interface ApplicationStatusHistoryDTO {
+    id: string;
+    applicationId: string;
+    fromStatus: string;
+    toStatus: string;
+    changedBy: string;
+    changedByUser: {
+        id: string;
+        fullName: string;
+        email: string;
+    };
+    changedAt: Date;
+    reason?: string | null;
+}
+
+export interface ApplicationWithUserDTO {
+    id: string;
+    jobId: string;
+    userId: string;
+    resume: any;
+    status: ApplicationStatus;
+    notes?: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+    user: {
+        id: string;
+        fullName: string;
+        email: string;
+    };
+}
+
+// Search Types
+export interface SearchFilters {
+    jobType?: string;
+    minSalary?: number;
+    maxSalary?: number;
+}
+
+export interface SearchPagination {
+    page?: number;
+    limit?: number;
+}
+
+export interface SearchResult {
+    data: JobDTO[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
