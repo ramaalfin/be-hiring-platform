@@ -113,7 +113,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Test pagination boundaries
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 6. Create authorization middleware
+- [x] 6. Create authorization middleware
   - Create `authorizeEmployer` middleware that validates:
     - User is authenticated (JWT valid)
     - User role is EMPLOYER
@@ -130,7 +130,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Test that employer cannot access other employer's applications
   - Test that 403 returned for unauthorized access
 
-- [ ] 7. Add input validation with Zod schemas
+- [x] 7. Add input validation with Zod schemas
   - Create schema for CreateJobInput (jobName, jobType, jobDescription, etc.)
   - Create schema for UpdateJobInput (optional fields)
   - Create schema for UpdateApplicationStatusInput (status enum, optional reason)
@@ -139,7 +139,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Add validation middleware to all endpoints
   - _Requirements: 6.2_
 
-- [ ] 8. Checkpoint - Ensure all backend tests pass
+- [x] 8. Checkpoint - Ensure all backend tests pass
   - Run all unit tests for services
   - Run all property-based tests
   - Verify no TypeScript compilation errors
