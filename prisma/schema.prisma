@@ -8,24 +8,24 @@ datasource db {
 }
 
 model User {
-  id             String             @id @default(uuid())
-  fullName       String
-  email          String             @unique
-  password       String
-  verified       Boolean            @default(false)
-  isTwoFAEnabled Boolean            @default(false)
-  twoFAEmailCode String?
-  twoFAExpiresAt DateTime?
-  role           Role               @default(CANDIDATE)
-  isDefaultPassword Boolean         @default(false)
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-  applications   Application[]
-  jobs           Job[]
-  createdJobs    Job[]              @relation("EmployerJobs")
-  statusChanges  ApplicationStatusHistory[]
-  sessions       Session[]
-  verifications  VerificationCode[]
+  id                String                     @id @default(uuid())
+  fullName          String
+  email             String                     @unique
+  password          String
+  verified          Boolean                    @default(false)
+  isTwoFAEnabled    Boolean                    @default(false)
+  twoFAEmailCode    String?
+  twoFAExpiresAt    DateTime?
+  role              Role                       @default(CANDIDATE)
+  createdAt         DateTime                   @default(now())
+  updatedAt         DateTime                   @updatedAt
+  isDefaultPassword Boolean                    @default(false)
+  applications      Application[]
+  statusChanges     ApplicationStatusHistory[]
+  jobs              Job[]
+  createdJobs       Job[]                      @relation("EmployerJobs")
+  sessions          Session[]
+  verifications     VerificationCode[]
 }
 
 model Session {
@@ -65,12 +65,12 @@ model Job {
   maximumSalary                     String
   minimumProfileInformationRequired Json
   createdBy                         String
-  employerId                        String?
   createdAt                         DateTime      @default(now())
   updatedAt                         DateTime      @updatedAt
+  employerId                        String?
   applications                      Application[]
   createdByUser                     User          @relation(fields: [createdBy], references: [id], onDelete: Cascade)
-  employer                          User?         @relation("EmployerJobs", fields: [employerId], references: [id], onDelete: SetNull)
+  employer                          User?         @relation("EmployerJobs", fields: [employerId], references: [id])
 
   @@index([createdBy])
   @@index([employerId])
@@ -81,17 +81,17 @@ model Job {
 }
 
 model Application {
-  id             String                        @id @default(uuid())
-  jobId          String
-  userId         String
-  resume         Json
-  status         ApplicationStatus             @default(APPLIED)
-  notes          String?
-  createdAt      DateTime                      @default(now())
-  updatedAt      DateTime                      @updatedAt
-  job            Job                           @relation(fields: [jobId], references: [id], onDelete: Cascade)
-  user           User                          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  statusHistory  ApplicationStatusHistory[]
+  id            String                     @id @default(uuid())
+  jobId         String
+  userId        String
+  resume        Json
+  createdAt     DateTime                   @default(now())
+  notes         String?
+  status        ApplicationStatus          @default(APPLIED)
+  updatedAt     DateTime                   @updatedAt
+  job           Job                        @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user          User                       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  statusHistory ApplicationStatusHistory[]
 
   @@unique([jobId, userId])
   @@index([jobId])
@@ -102,15 +102,15 @@ model Application {
 }
 
 model ApplicationStatusHistory {
-  id             String      @id @default(uuid())
-  applicationId  String
-  application    Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  fromStatus     String
-  toStatus       String
-  changedBy      String
-  changedByUser  User        @relation(fields: [changedBy], references: [id], onDelete: Restrict)
-  changedAt      DateTime    @default(now())
-  reason         String?
+  id            String      @id @default(uuid())
+  applicationId String
+  fromStatus    String
+  toStatus      String
+  changedBy     String
+  changedAt     DateTime    @default(now())
+  reason        String?
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  changedByUser User        @relation(fields: [changedBy], references: [id])
 
   @@unique([applicationId, changedAt])
   @@index([applicationId])

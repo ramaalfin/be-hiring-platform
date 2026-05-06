@@ -36,8 +36,11 @@ export const validateInput =
 
                     return res.status(400).json({
                         success: false,
-                        error: "Validation failed",
-                        details: formattedErrors,
+                        error: {
+                            code: "VALIDATION_ERROR",
+                            message: "Validation failed",
+                            details: formattedErrors,
+                        },
                     });
                 }
 

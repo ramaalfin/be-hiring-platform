@@ -136,6 +136,32 @@ export const addNoteInputSchema = z.object({
 export type AddNoteInput = z.infer<typeof addNoteInputSchema>;
 
 // ============================================================================
+// Application Retrieval Schemas
+// ============================================================================
+
+/**
+ * Schema for query params when retrieving applications for a job
+ * Used in: GET /api/v1/employer/jobs/:jobId/applications
+ */
+export const getApplicationsQuerySchema = z.object({
+    status: applicationStatusEnum.optional(),
+    page: z
+        .string()
+        .regex(/^\d+$/, "Page must be a positive integer")
+        .transform(Number)
+        .pipe(z.number().int().min(1, "Page must be at least 1"))
+        .optional(),
+    limit: z
+        .string()
+        .regex(/^\d+$/, "Limit must be a positive integer")
+        .transform(Number)
+        .pipe(z.number().int().min(1, "Limit must be at least 1").max(100, "Limit cannot exceed 100"))
+        .optional(),
+});
+
+export type GetApplicationsQuery = z.infer<typeof getApplicationsQuerySchema>;
+
+// ============================================================================
 // Search Schemas
 // ============================================================================
 

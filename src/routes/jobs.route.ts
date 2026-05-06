@@ -7,6 +7,7 @@ import {
     deleteJobController,
     getAllJobsByAdminController,
 } from "../controllers/jobs.controller";
+import { searchJobsController } from "../controllers/employer.controller";
 import authenticate from "../middleware/authenticate";
 import { authorizeRole } from "../middleware/authorizeRole";
 import { apiRateLimiter } from "../middleware/rateLimiter";
@@ -43,6 +44,10 @@ jobsRoutes.get(
 );
 
 jobsRoutes.get("/", apiRateLimiter, getAllJobsController);
+
+// Public job search — no authentication required
+// GET /api/v1/jobs/search?q=&jobType=&minSalary=&maxSalary=&page=&limit=
+jobsRoutes.get("/search", apiRateLimiter, searchJobsController);
 
 jobsRoutes.get("/:id", apiRateLimiter, getJobByIdController);
 

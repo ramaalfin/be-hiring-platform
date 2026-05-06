@@ -76,6 +76,17 @@ app.use("/api/v1/jobs", jobsRoutes);
 app.use("/api/v1/applications", applicationsRoutes);
 app.use("/api/v1/employer", employerRoutes);
 
+// 404 handler for unmatched routes
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: {
+      code: "NOT_FOUND",
+      message: `Route ${req.method} ${req.path} not found`,
+    },
+  });
+});
+
 app.use(errorHandler);
 
 app.listen(PORT, async () => {

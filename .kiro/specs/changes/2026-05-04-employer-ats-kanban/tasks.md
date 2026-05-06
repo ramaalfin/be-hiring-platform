@@ -150,7 +150,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
 
 ## Phase 2: API Endpoints
 
-- [ ] 9. Implement employer job endpoints
+- [x] 9. Implement employer job endpoints
   - POST /api/v1/employer/jobs - Create job (with authorizeEmployer middleware)
     - Request: CreateJobInput
     - Response: { success: true, data: Job, message: "Job created successfully" }
@@ -175,7 +175,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Test admin can still manage all jobs
   - _Requirements: 2.1, 2.3, 2.4, 2.5, 7.1_
 
-- [ ] 10. Implement application status endpoints
+- [x] 10. Implement application status endpoints
   - PATCH /api/v1/employer/applications/:id/status - Update status (with authorizeEmployer middleware)
     - Request: UpdateApplicationStatusInput { status, reason? }
     - Response: { success: true, data: Application, message: "Application status updated" }
@@ -198,7 +198,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Test notes persist correctly
   - _Requirements: 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 11. Implement job applications retrieval endpoint
+- [x] 11. Implement job applications retrieval endpoint
   - GET /api/v1/employer/jobs/:jobId/applications - Get applications grouped by status (with authorizeEmployer middleware)
     - Query params: status (optional filter), page, limit
     - Response: { success: true, data: { APPLIED: [...], SCREENING: [...], ... } }
@@ -212,7 +212,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Test applications grouped by status
   - _Requirements: 3.2, 6.1_
 
-- [ ] 12. Implement public job search endpoint
+- [x] 12. Implement public job search endpoint
   - GET /api/v1/jobs/search - Search jobs with filters (no auth required)
     - Query params: q (keyword), jobType, minSalary, maxSalary, page, limit
     - Response: { success: true, data: Job[], pagination: {...} }
@@ -227,7 +227,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Test pagination works
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 13. Add error handling and response formatting
+- [x] 13. Add error handling and response formatting
   - Ensure all endpoints return consistent response format
   - Handle 400 Bad Request for invalid input (validation errors)
   - Handle 401 Unauthorized for missing/invalid JWT
@@ -237,7 +237,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Add error logging for debugging
   - _Requirements: 6.1, 6.2_
 
-- [ ] 14. Checkpoint - Ensure all API tests pass
+- [x] 14. Checkpoint - Ensure all API tests pass
   - Run all integration tests for endpoints
   - Verify error handling works correctly
   - Test with Postman/curl to verify response format

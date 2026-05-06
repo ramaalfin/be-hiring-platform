@@ -103,7 +103,7 @@ export const updateApplicationStatusController = catchErrors(async (req, res) =>
         reason
     );
 
-    return ApiResponseHelper.success(res, updated, "Application status updated successfully");
+    return ApiResponseHelper.success(res, updated, "Application status updated");
 });
 
 export const getApplicationsByJobController = catchErrors(async (req, res) => {
@@ -113,7 +113,26 @@ export const getApplicationsByJobController = catchErrors(async (req, res) => {
     appAssert(userId, UNAUTHORIZED, "User not authenticated");
     appAssert(typeof jobId === "string", BAD_REQUEST, "Invalid job ID");
 
-    const grouped = await getApplicationsByJob(jobId, userId.toString());
+    const { status, page, limit } = req.query as {
+        status?: ApplicationStatus;
+        page?: string;
+        limit?: string;
+    };
+
+    const grouped = await getApplicationsByJob(jobId, userId.toString(), {
+        status: status as ApplicationStatus | undefined,
+        page: page ? Number(page) : undefined,
+        limit: limit ? Number(limit) : undefined,
+    });
+
+    // If a status filter was provided, return only that status group
+    if (status) {
+        return ApiResponseHelper.success(
+            res,
+            { [status]: grouped[status as ApplicationStatus] },
+            "Applications retrieved successfully"
+        );
+    }
 
     return ApiResponseHelper.success(res, grouped, "Applications retrieved successfully");
 });
@@ -133,13 +152,12 @@ export const getApplicationStatusHistoryController = catchErrors(async (req, res
 export const addApplicationNoteController = catchErrors(async (req, res) => {
     const userId = req.userId;
     const appId = req.params.appId;
-    const { note } = req.body;
+    const { notes } = req.body;
 
     appAssert(userId, UNAUTHORIZED, "User not authenticated");
     appAssert(typeof appId === "string", BAD_REQUEST, "Invalid application ID");
-    appAssert(typeof note === "string" && note.trim().length > 0, BAD_REQUEST, "note is required");
 
-    const updated = await addApplicationNote(appId, userId.toString(), note.trim());
+    const updated = await addApplicationNote(appId, userId.toString(), notes);
 
     return ApiResponseHelper.success(res, updated, "Note added successfully");
 });

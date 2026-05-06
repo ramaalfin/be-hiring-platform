@@ -3,6 +3,15 @@ import authenticate from "../middleware/authenticate";
 import { authorizeRole } from "../middleware/authorizeRole";
 import { apiRateLimiter } from "../middleware/rateLimiter";
 import requireVerified from "../middleware/requireVerified";
+import { authorizeEmployerForJob, authorizeEmployerForApplication } from "../middleware/authorizeEmployer";
+import { validateBody, validateQuery } from "../middleware/validateInput";
+import {
+    createJobInputSchema,
+    updateJobInputSchema,
+    updateApplicationStatusInputSchema,
+    addNoteInputSchema,
+    getApplicationsQuerySchema,
+} from "../schemas/employer.schemas";
 import {
     createJobAsEmployerController,
     getEmployerJobsController,
@@ -29,6 +38,7 @@ employerRoutes.post(
     authenticate,
     requireVerified,
     authorizeRole(["EMPLOYER"]),
+    validateBody(createJobInputSchema),
     createJobAsEmployerController
 );
 
@@ -49,6 +59,7 @@ employerRoutes.patch(
     authenticate,
     requireVerified,
     authorizeRole(["EMPLOYER"]),
+    validateBody(updateJobInputSchema),
     updateEmployerJobController
 );
 
@@ -69,7 +80,8 @@ employerRoutes.get(
     apiRateLimiter,
     authenticate,
     requireVerified,
-    authorizeRole(["EMPLOYER"]),
+    authorizeEmployerForJob,
+    validateQuery(getApplicationsQuerySchema),
     getApplicationsByJobController
 );
 
@@ -79,7 +91,8 @@ employerRoutes.patch(
     apiRateLimiter,
     authenticate,
     requireVerified,
-    authorizeRole(["EMPLOYER"]),
+    authorizeEmployerForApplication,
+    validateBody(updateApplicationStatusInputSchema),
     updateApplicationStatusController
 );
 
@@ -89,17 +102,18 @@ employerRoutes.get(
     apiRateLimiter,
     authenticate,
     requireVerified,
-    authorizeRole(["EMPLOYER"]),
+    authorizeEmployerForApplication,
     getApplicationStatusHistoryController
 );
 
-// POST   /api/v1/employer/applications/:appId/notes
-employerRoutes.post(
+// PATCH  /api/v1/employer/applications/:appId/notes
+employerRoutes.patch(
     "/applications/:appId/notes",
     apiRateLimiter,
     authenticate,
     requireVerified,
-    authorizeRole(["EMPLOYER"]),
+    authorizeEmployerForApplication,
+    validateBody(addNoteInputSchema),
     addApplicationNoteController
 );
 

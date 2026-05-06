@@ -209,9 +209,15 @@ export const updateApplicationStatus = async (
 };
 
 // Get all applications for a job, grouped by status
+// Supports optional status filter, page, and limit query params
 export const getApplicationsByJob = async (
     jobId: string,
-    userId: string
+    userId: string,
+    options?: {
+        status?: ApplicationStatus;
+        page?: number;
+        limit?: number;
+    }
 ): Promise<Record<ApplicationStatus, any[]>> => {
     // Verify job exists and employer owns it
     const job = await prisma.job.findUnique({ where: { id: jobId } });
@@ -222,9 +228,17 @@ export const getApplicationsByJob = async (
         "You don't have permission to view applications for this job"
     );
 
-    // Fetch all applications with user info and resume
+    const { status, page = 1, limit } = options ?? {};
+
+    // Build where clause — optionally filter by status
+    const where: { jobId: string; status?: PrismaApplicationStatus } = { jobId };
+    if (status) {
+        where.status = status as PrismaApplicationStatus;
+    }
+
+    // Fetch applications with user info and resume
     const applications = await prisma.application.findMany({
-        where: { jobId },
+        where,
         include: {
             user: {
                 select: {
@@ -235,6 +249,7 @@ export const getApplicationsByJob = async (
             },
         },
         orderBy: { createdAt: "asc" },
+        ...(limit ? { skip: (page - 1) * limit, take: limit } : {}),
     });
 
     // Initialize all 6 statuses with empty arrays
@@ -249,8 +264,8 @@ export const getApplicationsByJob = async (
 
     // Populate groups from DB results
     for (const app of applications) {
-        const status = app.status as ApplicationStatus;
-        grouped[status].push(app);
+        const appStatus = app.status as ApplicationStatus;
+        grouped[appStatus].push(app);
     }
 
     return grouped;

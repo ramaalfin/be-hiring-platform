@@ -1,10 +1,11 @@
 import { ErrorRequestHandler, Response } from "express";
-import { BAD_REQUEST, INTERNAL_SERVER_ERROR } from "../constants/http";
+import { BAD_REQUEST, CONFLICT, INTERNAL_SERVER_ERROR, NOT_FOUND } from "../constants/http";
 import { z } from "zod";
 import AppError from "../utils/AppError";
 import { clearAuthCookies, REFRESH_PATH } from "../utils/cookies";
 import { logger } from "../utils/logger";
 import { ApiResponseHelper } from "../utils/apiResponse";
+import { Prisma } from "@prisma/client";
 
 const handleZodError = (res: Response, error: z.ZodError): any => {
   const errors = error.issues.map((err) => ({
@@ -39,13 +40,30 @@ const handleAppError = (res: Response, error: AppError): any => {
   );
 };
 
-const errorHandler: ErrorRequestHandler = (error, req, res, next): any => {
-  console.log("🔴 ERROR HANDLER TRIGGERED");
-  console.log("🔴 Path:", req.path);
-  console.log("🔴 Method:", req.method);
-  console.log("🔴 Error type:", error.constructor.name);
-  console.log("🔴 Error message:", error.message);
+const handlePrismaError = (res: Response, error: Prisma.PrismaClientKnownRequestError): any => {
+  logger.warn("Prisma error", "PRISMA", {
+    code: error.code,
+    message: error.message,
+  });
 
+  switch (error.code) {
+    case "P2025":
+      return ApiResponseHelper.error(res, "NOT_FOUND", "Resource not found", NOT_FOUND);
+    case "P2002":
+      return ApiResponseHelper.error(res, "CONFLICT", "Resource already exists", CONFLICT);
+    case "P2003":
+      return ApiResponseHelper.error(res, "BAD_REQUEST", "Invalid reference", BAD_REQUEST);
+    default:
+      return ApiResponseHelper.error(
+        res,
+        "DATABASE_ERROR",
+        "A database error occurred",
+        INTERNAL_SERVER_ERROR
+      );
+  }
+};
+
+const errorHandler: ErrorRequestHandler = (error, req, res, next): any => {
   if (req.path === REFRESH_PATH) {
     clearAuthCookies(res);
   }
@@ -57,17 +75,18 @@ const errorHandler: ErrorRequestHandler = (error, req, res, next): any => {
   });
 
   if (error instanceof z.ZodError) {
-    console.log("🔴 Handling Zod Error");
     return handleZodError(res, error);
   }
 
   if (error instanceof AppError) {
-    console.log("🔴 Handling App Error");
     return handleAppError(res, error);
   }
 
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return handlePrismaError(res, error);
+  }
+
   // Generic error
-  console.log("🔴 Handling Generic Error");
   return ApiResponseHelper.error(
     res,
     "INTERNAL_SERVER_ERROR",

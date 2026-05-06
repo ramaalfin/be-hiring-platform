@@ -101,7 +101,7 @@ export const authorizeEmployerForApplication = async (
     try {
         const userId = req.userId;
         const userRole = req.userRole;
-        const applicationId = (req.params.id || req.params.applicationId) as string;
+        const applicationId = (req.params.id || req.params.applicationId || req.params.appId) as string;
 
         // Check if user is authenticated
         appAssert(userId, FORBIDDEN, "Not authorized");
