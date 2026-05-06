@@ -246,9 +246,9 @@ The implementation follows a backend-first approach: data models â†’ services â†
 
 ---
 
-## Phase 3: Frontend - Kanban Board
+## Phase 3: Frontend - Kanban Board 
 
-- [ ] 15. Create KanbanBoard component
+- [x] 15. Create KanbanBoard component
   - Component receives jobId and applications data
   - Renders 6 columns (APPLIED, SCREENING, INTERVIEW, OFFER, HIRED, REJECTED)
   - Each column shows count of applications
@@ -258,7 +258,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Uses React Query to fetch applications
   - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [ ] 16. Create KanbanColumn component
+- [x] 16. Create KanbanColumn component
   - Receives status, applications array, and onDrop callback
   - Renders column header with status name and count
   - Renders droppable zone using @hello-pangea/dnd
@@ -266,7 +266,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Accessible with ARIA labels
   - _Requirements: 4.1, 4.2, 6.3_
 
-- [ ] 17. Create ApplicationCard component
+- [x] 17. Create ApplicationCard component
   - Receives application data and isDragging prop
   - Renders candidate name (bold), email, applied date
   - Draggable using @hello-pangea/dnd
@@ -276,7 +276,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Accessible with ARIA labels and keyboard navigation
   - _Requirements: 4.2, 4.3, 6.3_
 
-- [ ] 18. Implement drag-and-drop logic with optimistic updates
+- [x] 18. Implement drag-and-drop logic with optimistic updates
   - Create handleDragEnd function in KanbanBoard
   - On drag end:
     1. Validate drop (not dropped outside, not same position)
@@ -300,7 +300,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Test that invalid drag is reverted
   - Test that error message shown
 
-- [ ] 19. Create ApplicationDetail modal/drawer component
+- [x] 19. Create ApplicationDetail modal/drawer component
   - Receives application data
   - Displays:
     - Candidate name, email, phone
@@ -313,7 +313,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Accessible with keyboard (Escape to close)
   - _Requirements: 4.6_
 
-- [ ] 20. Implement application notes functionality
+- [x] 20. Implement application notes functionality
   - Add notes text field to ApplicationDetail
   - Implement save button
   - On save: PATCH /api/v1/employer/applications/:id/notes
@@ -322,7 +322,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Update local state on success
   - _Requirements: 4.7_
 
-- [ ] 21. Implement kanban board auto-refresh
+- [x] 21. Implement kanban board auto-refresh
   - After successful status update, refetch applications
   - Use React Query's invalidateQueries to trigger refetch
   - Show loading state during refetch
@@ -342,7 +342,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Test draggable
   - _Requirements: 4.2_
 
-- [ ] 22. Checkpoint - Ensure kanban board works end-to-end
+- [x] 22. Checkpoint - Ensure kanban board works end-to-end
   - Manually test drag-and-drop in browser
   - Verify status updates in database
   - Verify error handling (try invalid drag)
