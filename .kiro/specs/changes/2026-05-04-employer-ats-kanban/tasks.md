@@ -354,7 +354,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
 
 ## Phase 4: Frontend - Search & Filter
 
-- [ ] 23. Create SearchInput component
+- [x] 23. Create SearchInput component
   - Text input field with placeholder "Search jobs..."
   - Implements debounced search (300ms)
   - On input change: call onSearch callback with query
@@ -363,7 +363,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Accessible with ARIA labels
   - _Requirements: 5.6_
 
-- [ ] 24. Create FilterPanel component
+- [x] 24. Create FilterPanel component
   - Dropdown for job type (Full-time, Part-time, Contract)
   - Slider for salary range (min/max)
   - Apply button to apply filters
@@ -372,7 +372,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Accessible with ARIA labels
   - _Requirements: 5.7_
 
-- [ ] 25. Implement search and filter logic
+- [x] 25. Implement search and filter logic
   - Create useJobSearch hook using React Query
   - Fetch from GET /api/v1/jobs/search with query params
   - Combine keyword search and filters
@@ -381,7 +381,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Handle error state
   - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
 
-- [ ] 26. Create job results display component
+- [x] 26. Create job results display component
   - Display search results as list or grid
   - Show job card with: title, type, salary range, company
   - Show pagination controls
@@ -390,7 +390,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Show empty state if no results
   - _Requirements: 5.6, 5.7_
 
-- [ ] 27. Implement loading states and error handling
+- [x] 27. Implement loading states and error handling
   - Show loading spinner while fetching
   - Show skeleton cards while loading
   - Show error message if search fails

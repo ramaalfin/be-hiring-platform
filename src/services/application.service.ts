@@ -4,14 +4,25 @@ import appAssert from "../utils/appAssert";
 import { ResumeData, ApplicationStatus } from "../types/api.types";
 import { ApplicationStatus as PrismaApplicationStatus } from "@prisma/client";
 
+// All possible statuses — used to allow any transition freely
+const ALL_STATUSES: ApplicationStatus[] = [
+    "APPLIED",
+    "SCREENING",
+    "INTERVIEW",
+    "OFFER",
+    "HIRED",
+    "REJECTED",
+];
+
 // Valid status transitions for the ATS kanban workflow
+// Any status can transition to any other status (full flexibility for employers)
 const VALID_TRANSITIONS: Record<ApplicationStatus, ApplicationStatus[]> = {
-    APPLIED: ["SCREENING", "REJECTED"],
-    SCREENING: ["INTERVIEW", "REJECTED"],
-    INTERVIEW: ["OFFER", "REJECTED"],
-    OFFER: ["HIRED", "REJECTED"],
-    HIRED: [],
-    REJECTED: [],
+    APPLIED: ALL_STATUSES.filter((s) => s !== "APPLIED"),
+    SCREENING: ALL_STATUSES.filter((s) => s !== "SCREENING"),
+    INTERVIEW: ALL_STATUSES.filter((s) => s !== "INTERVIEW"),
+    OFFER: ALL_STATUSES.filter((s) => s !== "OFFER"),
+    HIRED: ALL_STATUSES.filter((s) => s !== "HIRED"),
+    REJECTED: ALL_STATUSES.filter((s) => s !== "REJECTED"),
 };
 
 // Service untuk melamar pekerjaan
