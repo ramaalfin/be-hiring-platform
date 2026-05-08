@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import prisma from "../prisma/client";
 import { SearchFilters, SearchPagination, SearchResult } from "../types/api.types";
+import { withSlowQueryLog } from "../utils/performanceMonitor";
 
 const DEFAULT_LIMIT = 20;
 const DEFAULT_PAGE = 1;
@@ -76,15 +77,31 @@ export const searchJobs = async (
         ];
     }
 
-    const [jobs, total] = await Promise.all([
-        prisma.job.findMany({
-            where,
-            skip: (page - 1) * limit,
-            take: limit,
-            orderBy: { createdAt: "desc" },
-        }),
-        prisma.job.count({ where }),
-    ]);
+    const [jobs, total] = await withSlowQueryLog(
+        "searchJobs:findManyAndCount",
+        () =>
+            Promise.all([
+                prisma.job.findMany({
+                    where,
+                    skip: (page - 1) * limit,
+                    take: limit,
+                    orderBy: { createdAt: "desc" },
+                    select: {
+                        id: true,
+                        jobName: true,
+                        jobType: true,
+                        jobDescription: true,
+                        numberOfCandidateNeeded: true,
+                        minimumSalary: true,
+                        maximumSalary: true,
+                        employerId: true,
+                        createdAt: true,
+                        updatedAt: true,
+                    },
+                }),
+                prisma.job.count({ where }),
+            ])
+    );
 
     const totalPages = Math.ceil(total / limit);
 

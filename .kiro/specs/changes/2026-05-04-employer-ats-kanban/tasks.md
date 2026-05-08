@@ -417,21 +417,21 @@ The implementation follows a backend-first approach: data models â†’ services â†
 
 ## Phase 5: Frontend - Employer Dashboard & Routing
 
-- [ ] 29. Create employer dashboard layout
+- [x] 29. Create employer dashboard layout
   - Header with user info and logout button
   - Sidebar with navigation (Jobs, Applications, Settings)
   - Main content area
   - Responsive design (mobile, tablet, desktop)
   - _Requirements: 1.4_
 
-- [ ] 30. Implement job selector dropdown
+- [x] 30. Implement job selector dropdown
   - Dropdown to select which job to view applications for
   - Fetch employer's jobs from GET /api/v1/employer/jobs
   - Show job name and application count
   - On select: load applications for that job
   - _Requirements: 4.1_
 
-- [ ] 31. Implement employer routing
+- [x] 31. Implement employer routing
   - Create /employer/dashboard route
   - Create /employer/jobs route
   - Create /employer/jobs/:id route
@@ -440,7 +440,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Redirect to /employer/dashboard on login if role is EMPLOYER
   - _Requirements: 1.4_
 
-- [ ] 32. Create job management page
+- [x] 32. Create job management page
   - List employer's jobs
   - Show job details (title, type, salary, applications count)
   - Create new job button
@@ -448,7 +448,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Delete job button
   - _Requirements: 2.1, 2.3, 2.4_
 
-- [ ] 33. Create job creation/edit form
+- [x] 33. Create job creation/edit form
   - Form fields: jobName, jobType, jobDescription, numberOfCandidateNeeded, minimumSalary, maximumSalary
   - Validation using Zod schema
   - Submit button
@@ -512,7 +512,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Run each property test with 100+ iterations
   - _Requirements: All_
 
-- [ ] 37. Performance testing and optimization
+- [x] 37. Performance testing and optimization
   - Measure drag-and-drop UI response time (target: <100ms)
   - Measure API response time for status update (target: <500ms p95)
   - Measure kanban board load time (target: <2 seconds)
@@ -521,7 +521,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Optimize frontend rendering (memoization, virtualization)
   - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-- [ ] 38. Accessibility testing
+- [x] 38. Accessibility testing
   - Test keyboard navigation through kanban board
   - Test screen reader support (ARIA labels)
   - Test color contrast ratios

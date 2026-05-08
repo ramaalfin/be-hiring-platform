@@ -3,6 +3,7 @@ import prisma from "../prisma/client";
 import appAssert from "../utils/appAssert";
 import { ResumeData, ApplicationStatus } from "../types/api.types";
 import { ApplicationStatus as PrismaApplicationStatus } from "@prisma/client";
+import { withSlowQueryLog } from "../utils/performanceMonitor";
 
 // All possible statuses — used to allow any transition freely
 const ALL_STATUSES: ApplicationStatus[] = [
@@ -200,21 +201,34 @@ export const updateApplicationStatus = async (
     );
 
     // Update status and create history record in a transaction
-    const [updatedApplication] = await prisma.$transaction([
-        prisma.application.update({
-            where: { id: appId },
-            data: { status: newStatus as PrismaApplicationStatus },
-        }),
-        prisma.applicationStatusHistory.create({
-            data: {
-                applicationId: appId,
-                fromStatus: currentStatus,
-                toStatus: newStatus,
-                changedBy: userId,
-                reason: reason ?? null,
-            },
-        }),
-    ]);
+    const [updatedApplication] = await withSlowQueryLog(
+        "updateApplicationStatus:transaction",
+        () =>
+            prisma.$transaction([
+                prisma.application.update({
+                    where: { id: appId },
+                    data: { status: newStatus as PrismaApplicationStatus },
+                    select: {
+                        id: true,
+                        jobId: true,
+                        userId: true,
+                        status: true,
+                        notes: true,
+                        createdAt: true,
+                        updatedAt: true,
+                    },
+                }),
+                prisma.applicationStatusHistory.create({
+                    data: {
+                        applicationId: appId,
+                        fromStatus: currentStatus,
+                        toStatus: newStatus,
+                        changedBy: userId,
+                        reason: reason ?? null,
+                    },
+                }),
+            ])
+    );
 
     return updatedApplication;
 };
@@ -248,20 +262,31 @@ export const getApplicationsByJob = async (
     }
 
     // Fetch applications with user info and resume
-    const applications = await prisma.application.findMany({
-        where,
-        include: {
-            user: {
+    const applications = await withSlowQueryLog(
+        "getApplicationsByJob:findMany",
+        () =>
+            prisma.application.findMany({
+                where,
                 select: {
                     id: true,
-                    fullName: true,
-                    email: true,
+                    jobId: true,
+                    status: true,
+                    resume: true,
+                    notes: true,
+                    createdAt: true,
+                    updatedAt: true,
+                    user: {
+                        select: {
+                            id: true,
+                            fullName: true,
+                            email: true,
+                        },
+                    },
                 },
-            },
-        },
-        orderBy: { createdAt: "asc" },
-        ...(limit ? { skip: (page - 1) * limit, take: limit } : {}),
-    });
+                orderBy: { createdAt: "asc" },
+                ...(limit ? { skip: (page - 1) * limit, take: limit } : {}),
+            })
+    );
 
     // Initialize all 6 statuses with empty arrays
     const grouped: Record<ApplicationStatus, any[]> = {
