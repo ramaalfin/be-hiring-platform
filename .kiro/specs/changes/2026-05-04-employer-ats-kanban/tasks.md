@@ -530,7 +530,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Use axe DevTools to check for violations
   - _Requirements: 6.5, 6.6_
 
-- [ ] 39. Security testing
+- [x] 39. Security testing
   - Test IDOR prevention (employer cannot access other's jobs)
   - Test authorization middleware (403 on unauthorized access)
   - Test input validation (reject invalid inputs)
