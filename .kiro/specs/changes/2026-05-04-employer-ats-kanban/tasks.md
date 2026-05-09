@@ -538,7 +538,7 @@ The implementation follows a backend-first approach: data models â†’ services â†
   - Test status history immutability (cannot update/delete)
   - _Requirements: 6.1, 6.2, 6.3_
 
-- [ ] 40. Backward compatibility testing
+- [x] 40. Backward compatibility testing
   - Test ADMIN role still works (can create jobs, manage all applications)
   - Test CANDIDATE role still works (can view jobs, apply, view own applications)
   - Test existing endpoints unchanged (GET /api/v1/jobs, POST /api/v1/applications/:jobId/apply, etc.)

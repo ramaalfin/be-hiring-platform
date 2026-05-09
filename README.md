@@ -1,22 +1,25 @@
-# Hiring Platform - Backend API
+# GetJob — Backend API
 
-Platform rekrutmen modern dengan fitur authentication, magic link, email verification, dan role-based access control.
+Platform rekrutmen modern dengan autentikasi passwordless, manajemen lowongan, ATS pipeline berbasis kanban, dan role-based access control.
 
-**Status**: ✅ Production Ready | **Version**: 2.0.0 | **Last Updated**: April 2026
+**Status**: ✅ Production Ready | **Version**: 3.0.0 | **Last Updated**: May 2026
 
 ---
 
 ## 📋 Table of Contents
 
 1. [Quick Start](#-quick-start)
-2. [New Features v2.0](#-new-features-v20)
-3. [Environment Setup](#-environment-setup)
-4. [Database Setup](#-database-setup)
-5. [Email Configuration](#-email-configuration)
-6. [Deployment](#-deployment)
-7. [API Documentation](#-api-documentation)
-8. [Security](#-security)
-9. [Troubleshooting](#-troubleshooting)
+2. [Changelog](#-changelog)
+3. [Tech Stack](#️-tech-stack)
+4. [Project Structure](#-project-structure)
+5. [Environment Setup](#-environment-setup)
+6. [Database Setup](#️-database-setup)
+7. [Email Configuration](#-email-configuration)
+8. [API Documentation](#-api-documentation)
+9. [Security](#-security)
+10. [Deployment](#-deployment)
+11. [Scripts](#-scripts)
+12. [Troubleshooting](#-troubleshooting)
 
 ---
 
@@ -34,7 +37,7 @@ cp .env.example .env
 
 # 3. Setup database
 npx prisma migrate dev
-npm run seed  # Optional: Create admin + 10 jobs
+npm run seed  # Optional: buat admin + 10 jobs
 
 # 4. Start server
 npm run dev
@@ -51,89 +54,138 @@ npm start
 
 ---
 
-## 🎉 New Features v2.0
+## 📝 Changelog
 
-### 1. Email Verification Middleware ✅
-- User harus verify email sebelum akses protected routes
-- Middleware `requireVerified` di semua routes penting
-- Error 403 jika belum verified
+### v3.0.0 — May 2026 (Employer ATS Kanban)
 
-### 2. Database Seeder ✅
-```bash
-npm run seed
+**Fitur Baru**
+
+- **Employer Role**: Role baru `EMPLOYER` terpisah dari `ADMIN` dan `CANDIDATE`. Employer hanya bisa mengakses job dan aplikasi milik mereka sendiri.
+- **ATS Pipeline**: Status aplikasi diperluas menjadi 6 tahap — `APPLIED → SCREENING → INTERVIEW → OFFER → HIRED / REJECTED`. Transisi status divalidasi di backend (tidak bisa loncat sembarangan).
+- **Status History**: Setiap perubahan status tersimpan sebagai audit trail yang immutable.
+- **Notes per Aplikasi**: Employer bisa menambahkan catatan internal pada setiap aplikasi.
+- **Job Search & Filter**: Endpoint publik untuk pencarian lowongan berdasarkan keyword, tipe pekerjaan, dan rentang gaji dengan pagination.
+- **Employer Routes** (`/api/v1/employer`): Endpoint lengkap untuk manajemen job dan aplikasi khusus employer.
+- **Input Validation Middleware**: `validateBody` dan `validateQuery` menggunakan Zod schema terpusat di `src/schemas/employer.schemas.ts`.
+- **Employer Authorization Middleware**: `authorizeEmployerForJob` dan `authorizeEmployerForApplication` mencegah akses lintas employer.
+
+**Perubahan Database**
+
+- Tabel `User`: tambah nilai enum `EMPLOYER` pada kolom `role`
+- Tabel `Job`: tambah kolom `employerId` (foreign key ke `User`)
+- Tabel `Application`: ubah kolom `status` menjadi enum 6 nilai
+- Tabel baru `ApplicationStatusHistory`: menyimpan riwayat perubahan status
+- Tabel `Application`: tambah kolom `notes` (text, nullable)
+
+---
+
+### v2.0.0 — April 2026
+
+- **Email Verification Middleware**: User wajib verifikasi email sebelum akses protected routes (`requireVerified`)
+- **Database Seeder**: 1 admin (`admin@getjob.com` / `admin#123`) + 10 job postings siap pakai
+- **Password Default System**: User baru via Magic Link mendapat password `User12345`, wajib diubah saat login pertama
+- **Profile Management**: `PATCH /api/v1/user/profile` untuk update nama dan password
+- **Enhanced Security**: Rate limiting 3-tier, IDOR protection, one-time verification codes, database indexes
+
+---
+
+### v1.0.0 — Initial Release
+
+- Autentikasi tradisional (register, login, logout, refresh token)
+- Magic Link login & register (passwordless)
+- Forgot/reset password via email
+- Role-based access control: `ADMIN` dan `CANDIDATE`
+- Job management (CRUD) oleh Admin
+- Application system: kandidat apply dengan upload foto/resume ke Cloudinary
+- Email service: Gmail (dev) / Resend (prod)
+- Rate limiting & security hardening
+
+---
+
+## 🛠️ Tech Stack
+
+| Kategori | Teknologi |
+|----------|-----------|
+| Runtime | Node.js 20 |
+| Framework | Express.js |
+| Language | TypeScript |
+| Database | PostgreSQL + Prisma ORM |
+| Authentication | JWT (access + refresh) + Cookies |
+| Email | Nodemailer/Gmail (dev), Resend (prod) |
+| File Upload | Multer + Cloudinary |
+| Validation | Zod |
+| Testing | Jest + Supertest |
+| Deployment | Railway |
+
+---
+
+## 📂 Project Structure
+
+```text
+be-hiring-platform/
+├── prisma/
+│   ├── schema.prisma         # Database models
+│   ├── seed.ts               # Database seeder
+│   └── migrations/           # Migration history
+├── src/
+│   ├── constants/            # Environment variable wrappers & error codes
+│   ├── controllers/          # Request handlers
+│   ├── lib/                  # Prisma client, Cloudinary config
+│   ├── middleware/
+│   │   ├── authenticate.ts           # JWT verification
+│   │   ├── authorizeRole.ts          # Role-based access
+│   │   ├── authorizeEmployer.ts      # Employer ownership check (v3)
+│   │   ├── requireVerified.ts        # Email verification check
+│   │   ├── rateLimiter.ts            # 3-tier rate limiting
+│   │   ├── validateInput.ts          # Zod body/query validation (v3)
+│   │   └── errorHandler.ts           # Global error handler
+│   ├── repositories/         # Database access layer (Prisma abstraction)
+│   ├── routes/
+│   │   ├── auth.route.ts
+│   │   ├── jobs.route.ts
+│   │   ├── applications.route.ts
+│   │   ├── user.route.ts
+│   │   └── employer.route.ts         # Employer ATS routes (v3)
+│   ├── schemas/
+│   │   └── employer.schemas.ts       # Zod schemas untuk employer endpoints (v3)
+│   ├── services/             # Business logic
+│   ├── types/                # TypeScript interfaces
+│   ├── utils/                # Logger, error wrapper
+│   └── index.ts              # Entry point
+├── .env.example
+├── package.json
+└── tsconfig.json
 ```
-- 1 Admin: `admin@getjob.com` / `admin#123`
-- 10 Job postings siap pakai
-
-### 3. Password Default System ✅
-- User baru via Magic Link dapat password: `User12345`
-- Modal auto-show saat login
-- Wajib ubah password sebelum lanjut
-
-### 4. Profile Management ✅
-- API endpoint: `PATCH /api/v1/user/profile`
-- Update nama lengkap
-- Ubah password dengan validasi
-
-### 5. Enhanced Security ✅
-- Rate limiting (3-tier system)
-- IDOR protection
-- One-time verification codes
-- Database indexes untuk performance
 
 ---
 
 ## 🔧 Environment Setup
 
-### Required Variables
-
 ```bash
 # Node Environment
-NODE_ENV=development  # or production
+NODE_ENV=development  # atau production
 
 # Server
 PORT=5001
-APP_ORIGIN=http://localhost:3000  # Frontend URL
+APP_ORIGIN=http://localhost:3000  # URL frontend (untuk CORS)
 
 # Database
 DATABASE_URL=postgresql://user:password@localhost:5432/hiring
 
-# JWT Secrets
+# JWT
 JWT_SECRET=your_jwt_secret_here
 JWT_REFRESH_SECRET=your_jwt_refresh_secret_here
-```
 
-### Email Configuration
-
-**Development (Gmail)**:
-```bash
+# Email — Development (Gmail)
 EMAIL_SERVICE=gmail
 GMAIL_USER=your_email@gmail.com
-GMAIL_PASS=your_app_password  # Get from Google Account
-```
+GMAIL_PASS=your_app_password
 
-**Production (Resend - Recommended)**:
-```bash
+# Email — Production (Resend)
 RESEND_API_KEY=re_xxxxxxxxxxxxx
-EMAIL_FROM=GetJob <onboarding@resend.dev>
-```
+EMAIL_FROM=GetJob <noreply@yourdomain.com>
 
-**Why Resend?**
-- Railway blocks Gmail SMTP ports (587/465)
-- Resend uses HTTPS (works everywhere)
-- Free tier: 3,000 emails/month
-- Better deliverability
-
-**Setup Resend**:
-1. Sign up at [resend.com](https://resend.com)
-2. Create API key
-3. Add to environment variables
-4. For testing: use `onboarding@resend.dev`
-5. For production: verify your domain
-
-### Optional (Cloudinary)
-
-```bash
+# Cloudinary
 CLOUDINARY_CLOUD_NAME=your_cloud_name
 CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
@@ -143,262 +195,154 @@ CLOUDINARY_API_SECRET=your_api_secret
 
 ## 🗄️ Database Setup
 
-### 1. Run Migrations
-
 ```bash
+# Jalankan migrasi
 npx prisma migrate dev
-```
 
-### 2. Run Seeder (Optional)
-
-```bash
+# Seed data awal (opsional)
 npm run seed
+# → Admin: admin@getjob.com / admin#123
+# → 10 job postings
+
+# Buka Prisma Studio (GUI)
+npx prisma studio  # http://localhost:5555
 ```
-
-Creates:
-- 1 Admin account: `admin@getjob.com` / `admin#123`
-- 10 Job postings (Frontend, Backend, UI/UX, DevOps, etc.)
-
-### 3. Prisma Studio (Database GUI)
-
-```bash
-npx prisma studio
-```
-
-Opens at `http://localhost:5555`
 
 ---
 
 ## 📧 Email Configuration
 
-### Auto-Switching Email Provider
+Backend otomatis memilih provider berdasarkan environment:
 
-Code automatically switches based on environment:
+- **Development**: Gmail SMTP
+- **Production**: Resend (HTTPS — menghindari blokir port SMTP di Railway)
 
-```typescript
-const useResend = process.env.RESEND_API_KEY && NODE_ENV === 'production';
-
-if (useResend) {
-  // Production: Resend (HTTPS)
-  await resend.emails.send({...});
-} else {
-  // Development: Gmail (SMTP)
-  await transporter.sendMail({...});
-}
-```
-
-### Email Functions
-
-All use unified `sendEmail` helper:
-- `sendTwoFACode` - 2FA verification
-- `sendVerificationEmail` - Email verification
-- `sendMagicLoginEmail` - Magic link login
-- `sendMagicRegisterEmail` - Magic link registration
-- `sendForgotPasswordEmail` - Password reset
-
-### Testing Emails
-
-**Development**:
-- Uses Gmail SMTP
-- Emails sent to real addresses
-
-**Production**:
-- Uses Resend
-- Check delivery in [Resend Dashboard](https://resend.com/emails)
-
----
-
-## 🚢 Deployment
-
-### Railway Deployment
-
-#### 1. Configuration Files
-
-**railway.toml**:
-```toml
-[build]
-builder = "NIXPACKS"
-buildCommand = "npm install && npm run build"
-
-[deploy]
-startCommand = "npm start"
-restartPolicyType = "ON_FAILURE"
-restartPolicyMaxRetries = 10
-```
-
-**nixpacks.toml**:
-```toml
-[phases.setup]
-nixPkgs = ["nodejs_20"]
-
-[phases.install]
-cmds = ["npm ci"]
-
-[phases.build]
-cmds = ["npm run build"]
-
-[start]
-cmd = "npm start"
-```
-
-#### 2. Environment Variables
-
-Set in Railway dashboard:
-
-```bash
-NODE_ENV=production
-DATABASE_URL=<railway-postgres-url>
-APP_ORIGIN=<your-frontend-url>
-PORT=5001
-JWT_SECRET=<your-secret>
-JWT_REFRESH_SECRET=<your-refresh-secret>
-RESEND_API_KEY=re_xxxxxxxxxxxxx
-EMAIL_FROM=GetJob <onboarding@resend.dev>
-```
-
-#### 3. Deploy
-
-```bash
-git push origin main
-```
-
-Railway auto-deploys on push.
-
-#### 4. Verify
-
-- Check Railway logs
-- Test API endpoints
-- Verify email sending
-- Test magic links
-
-### Deployment Checklist
-
-- [ ] All environment variables set
-- [ ] Database migration completed
-- [ ] TypeScript build succeeds
-- [ ] CORS configured for production
-- [ ] Resend API key added
-- [ ] Email sending tested
-- [ ] Magic links work
-- [ ] No CORS errors
+**Setup Resend**:
+1. Daftar di [resend.com](https://resend.com)
+2. Buat API key
+3. Tambahkan `RESEND_API_KEY` ke environment
+4. Untuk testing: gunakan `onboarding@resend.dev`
+5. Untuk production: verifikasi domain Anda
 
 ---
 
 ## 📚 API Documentation
 
+### Base URL
+
+```
+http://localhost:5001/api/v1
+```
+
 ### Authentication
 
-**Register**:
-```http
-POST /api/v1/auth/register
-Content-Type: application/json
+| Method | Endpoint | Deskripsi | Auth |
+|--------|----------|-----------|------|
+| POST | `/auth/register` | Registrasi tradisional | — |
+| POST | `/auth/login` | Login dengan password | — |
+| GET | `/auth/logout` | Logout | — |
+| POST | `/auth/refresh` | Refresh access token | — |
+| POST | `/auth/email/verify` | Verifikasi email | — |
+| POST | `/auth/password/forgot` | Request reset password | — |
+| POST | `/auth/password/reset` | Reset password | — |
+| POST | `/auth/magic-login` | Request magic link login | — |
+| GET | `/auth/magic-login/verify` | Verifikasi magic link login | — |
+| POST | `/auth/magic-register` | Request magic link register | — |
+| GET | `/auth/magic-register/verify` | Verifikasi magic link register | — |
+| GET | `/auth/me` | Get profil user saat ini | ✅ |
 
-{
-  "fullName": "John Doe",
-  "email": "john@example.com",
-  "password": "password123",
-  "confirmPassword": "password123"
-}
-```
+### User
 
-**Login**:
-```http
-POST /api/v1/auth/login
-Content-Type: application/json
+| Method | Endpoint | Deskripsi | Auth |
+|--------|----------|-----------|------|
+| GET | `/user` | Get profil | ✅ |
+| PATCH | `/user/profile` | Update nama / password | ✅ |
 
-{
-  "email": "john@example.com",
-  "password": "password123"
-}
-```
+### Jobs (Admin)
 
-**Magic Link Login**:
-```http
-POST /api/v1/auth/magic-login
-Content-Type: application/json
-
-{
-  "email": "john@example.com"
-}
-```
-
-**Magic Link Register**:
-```http
-POST /api/v1/auth/magic-register
-Content-Type: application/json
-
-{
-  "email": "john@example.com"
-}
-```
-
-### User Profile
-
-**Get Profile**:
-```http
-GET /api/v1/user
-Authorization: Bearer <access_token>
-```
-
-**Update Profile**:
-```http
-PATCH /api/v1/user/profile
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "fullName": "John Doe Updated",
-  "currentPassword": "User12345",  // Required if changing password
-  "newPassword": "newpassword123"   // Optional
-}
-```
-
-### Jobs (Admin Only)
-
-**Create Job**:
-```http
-POST /api/v1/jobs
-Authorization: Bearer <access_token>
-Content-Type: application/json
-
-{
-  "jobName": "Frontend Developer",
-  "jobType": "Full-time",
-  "jobDescription": "...",
-  "numberOfCandidateNeeded": 2,
-  "minimumSalary": "8000000",
-  "maximumSalary": "15000000",
-  "minimumProfileInformationRequired": {...}
-}
-```
-
-**Get All Jobs**:
-```http
-GET /api/v1/jobs
-```
+| Method | Endpoint | Deskripsi | Auth | Role |
+|--------|----------|-----------|------|------|
+| GET | `/jobs` | Semua lowongan (publik) | — | — |
+| GET | `/jobs/search` | Cari lowongan (publik) | — | — |
+| GET | `/jobs/:id` | Detail lowongan | — | — |
+| GET | `/jobs/admin/:id` | Lowongan milik admin | ✅ | ADMIN |
+| POST | `/jobs` | Buat lowongan | ✅ | ADMIN |
+| PATCH | `/jobs/:id` | Update lowongan | ✅ | ADMIN |
+| DELETE | `/jobs/:id` | Hapus lowongan | ✅ | ADMIN |
 
 ### Applications
 
-**Apply for Job**:
-```http
-POST /api/v1/applications/:jobId/apply
-Authorization: Bearer <access_token>
-Content-Type: multipart/form-data
+| Method | Endpoint | Deskripsi | Auth | Role |
+|--------|----------|-----------|------|------|
+| POST | `/applications/:jobId/apply` | Apply lowongan | ✅ | CANDIDATE |
+| GET | `/applications/admin/:jobId` | Aplikasi per job | ✅ | ADMIN |
+| GET | `/applications/user/:userId` | Aplikasi milik kandidat | ✅ | CANDIDATE |
+| GET | `/applications` | Semua aplikasi | ✅ | ADMIN |
 
+### Employer (v3.0 — ATS)
+
+| Method | Endpoint | Deskripsi | Auth | Role |
+|--------|----------|-----------|------|------|
+| GET | `/employer/jobs/search` | Cari lowongan (publik) | — | — |
+| POST | `/employer/jobs` | Buat lowongan | ✅ | EMPLOYER |
+| GET | `/employer/jobs` | Lowongan milik employer | ✅ | EMPLOYER |
+| PATCH | `/employer/jobs/:jobId` | Update lowongan | ✅ | EMPLOYER |
+| DELETE | `/employer/jobs/:jobId` | Hapus lowongan | ✅ | EMPLOYER |
+| GET | `/employer/jobs/:jobId/applications` | Aplikasi per job (dikelompokkan per status) | ✅ | EMPLOYER |
+| PATCH | `/employer/applications/:appId/status` | Update status aplikasi | ✅ | EMPLOYER |
+| GET | `/employer/applications/:appId/history` | Riwayat status aplikasi | ✅ | EMPLOYER |
+| PATCH | `/employer/applications/:appId/notes` | Tambah catatan aplikasi | ✅ | EMPLOYER |
+
+#### ATS Status Transitions
+
+```
+APPLIED    → SCREENING, REJECTED
+SCREENING  → INTERVIEW, REJECTED
+INTERVIEW  → OFFER,     REJECTED
+OFFER      → HIRED,     REJECTED
+HIRED      → (terminal)
+REJECTED   → (terminal)
+```
+
+Status default saat aplikasi dibuat: `APPLIED`. Transisi yang tidak valid akan ditolak dengan **HTTP 400 Bad Request**. Request body bisa menyertakan field `reason` (opsional) untuk mencatat alasan perubahan status.
+
+**Catatan backward compatibility**: Kolom `employerId` di tabel `Job` bersifat nullable — job yang dibuat oleh ADMIN sebelum v3.0 tidak memiliki `employerId`.
+
+### PATCH `/employer/applications/:appId/status`
+
+Request body:
+```json
 {
-  "resume": {...},
-  "photoProfile": <file>
+  "status": "SCREENING",
+  "reason": "Passed initial screening"  // opsional
 }
 ```
 
-### Response Format
+Response sukses (200):
+```json
+{
+  "success": true,
+  "data": { "id": "...", "status": "SCREENING", "updatedAt": "..." },
+  "message": "Application status updated"
+}
+```
+
+Response error transisi tidak valid (400):
+```json
+{
+  "success": false,
+  "error": "Invalid status transition from APPLIED to HIRED"
+}
+```
+
+---
 
 **Success**:
 ```json
 {
   "success": true,
   "message": "Operation successful",
-  "data": {...}
+  "data": { ... }
 }
 ```
 
@@ -417,200 +361,132 @@ Content-Type: multipart/form-data
 
 ## 🔒 Security
 
-### Rate Limiting
+### Rate Limiting (3-tier)
 
-Three-tier system:
-- **Auth endpoints**: 5 attempts / 15 minutes
-- **Sensitive endpoints**: 10 requests / minute
-- **General API**: 100 requests / minute
+| Tier | Endpoint | Limit |
+|------|----------|-------|
+| Auth | `/auth/register`, `/auth/login` | 5 req / 15 menit |
+| Strict | `/auth/magic-*`, `/auth/password/forgot` | 10 req / menit |
+| General | Semua endpoint lain | 100 req / menit |
 
-### IDOR Protection
+### Proteksi Lainnya
 
-- Ownership validation in all services
-- Admins can only access their own resources
-- Users can only view their own applications
-
-### Email Verification
-
-- Required for protected routes
-- Middleware `requireVerified` checks verification status
-- Returns 403 if not verified
-
-### Password Security
-
-- Bcrypt hashing with salt
-- Default password system for magic link users
-- Forced password change on first login
-- Minimum 8 characters validation
-
-### JWT Tokens
-
-- Access token: 15 minutes
-- Refresh token: 30 days
-- Auto-refresh mechanism
-- Secure cookie storage
-
-### Database Indexes
-
-Performance indexes on:
-- Job: `createdBy`, `jobType`, `createdAt`
-- Session: `userId`, `expiresAt`
-- Application: `jobId`, `userId`, `createdAt`
-- VerificationCode: `userId`, `type`, `expiresAt`
-
-**Result**: 10x faster queries
+- **IDOR Protection**: Validasi kepemilikan resource di semua service
+- **Email Verification**: Middleware `requireVerified` di semua protected routes
+- **Employer Isolation**: `authorizeEmployerForJob` dan `authorizeEmployerForApplication` memastikan employer hanya akses data miliknya
+- **Password Security**: Bcrypt hashing, default password system, forced change on first login
+- **JWT**: Access token 15 menit, refresh token 30 hari, disimpan di HTTP-only cookie
+- **Database Indexes**: Index pada kolom `createdBy`, `jobId`, `userId`, `expiresAt` — query 10x lebih cepat
 
 ---
 
-## 🐛 Troubleshooting
+## 🚢 Deployment
 
-### Build Errors
+### Railway
 
-**Error**: `Cannot find module '/app/dist/index.js'`
-
-**Solution**:
-```json
-{
-  "scripts": {
-    "build": "npx prisma generate && tsc"
-  }
-}
-```
-
-Move `typescript` and `prisma` to `dependencies`.
-
-### Email Not Sending
-
-**Error**: "Connection timeout"
-
-**Solution**:
-1. Use Resend instead of Gmail
-2. Add `RESEND_API_KEY` to environment
-3. Set `EMAIL_FROM` to `onboarding@resend.dev`
-
-### CORS Errors
-
-**Error**: CORS error in browser
-
-**Solution**:
-1. Add frontend domain to CORS config
-2. Set `APP_ORIGIN` environment variable
-3. Restart server
-
-### Magic Link Issues
-
-**Error**: "Link expired or invalid"
-
-**Causes**:
-- Link already used (one-time use)
-- Link expired (30 minutes)
-- React Strict Mode double execution (fixed)
-
-**Solution**:
-- Request new magic link
-- Check browser console for errors
-- Verify `useRef` is used in frontend
-
-### Database Performance
-
-**Issue**: Slow queries
-
-**Solution**:
 ```bash
-npx prisma migrate dev --name add_indexes
+# Deploy otomatis saat push ke main
+git push origin main
 ```
 
-Verify indexes:
-```sql
-SELECT * FROM pg_indexes WHERE tablename = 'Job';
+Environment variables yang wajib diset di Railway dashboard:
+
+```bash
+NODE_ENV=production
+DATABASE_URL=<railway-postgres-url>
+APP_ORIGIN=<frontend-url>
+PORT=5001
+JWT_SECRET=<secret>
+JWT_REFRESH_SECRET=<secret>
+RESEND_API_KEY=re_xxxxxxxxxxxxx
+EMAIL_FROM=GetJob <noreply@yourdomain.com>
+CLOUDINARY_CLOUD_NAME=<name>
+CLOUDINARY_API_KEY=<key>
+CLOUDINARY_API_SECRET=<secret>
 ```
 
-### Seeder Errors
+### Deployment Checklist
 
-**Error**: "Email already in use"
-
-**Solution**: Seeder uses `upsert` - will skip existing admin.
-
-**Error**: "Connection timeout"
-
-**Solution**: Check `DATABASE_URL` in `.env`.
+- [ ] Semua environment variables sudah diset
+- [ ] Migrasi database sudah dijalankan
+- [ ] Build TypeScript berhasil
+- [ ] CORS dikonfigurasi untuk domain production
+- [ ] Resend API key aktif
+- [ ] Email sending sudah ditest
+- [ ] Magic links berfungsi
 
 ---
 
 ## 📝 Scripts
 
 ```bash
-npm run dev          # Development server with hot reload
-npm run build        # Build for production
-npm start            # Start production server
-npm run seed         # Run database seeder
-npx prisma studio    # Open Prisma Studio (database GUI)
-npx prisma migrate   # Run database migrations
-npx prisma generate  # Generate Prisma Client
+npm run dev           # Development server (hot reload)
+npm run build         # Build production (prisma generate + tsc)
+npm start             # Jalankan production server
+npm run seed          # Seed database
+npm run test          # Jalankan semua test
+npm run test:watch    # Test mode watch
+npm run test:coverage # Test dengan coverage report
+npx prisma studio     # Buka Prisma Studio (GUI)
+npx prisma migrate dev # Jalankan migrasi
+npx prisma generate   # Generate Prisma Client
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## 🐛 Troubleshooting
 
-- **Runtime**: Node.js 20
-- **Framework**: Express.js
-- **Database**: PostgreSQL + Prisma ORM
-- **Authentication**: JWT + Cookies
-- **Email**: Nodemailer (dev) / Resend (prod)
-- **Upload**: Cloudinary
-- **Language**: TypeScript
+### Build Error: `Cannot find module '/app/dist/index.js'`
 
----
+Pastikan `typescript` dan `prisma` ada di `dependencies` (bukan hanya `devDependencies`), dan build command adalah:
+```bash
+npx prisma generate && tsc
+```
 
-## 📄 Additional Documentation
+### Email Tidak Terkirim: "Connection timeout"
 
-- **RESEND_SETUP.md** - Detailed Resend email setup
-- **SEEDER_INSTRUCTIONS.md** - How to run seeder
-- **FEATURES_CHANGELOG.md** - All new features v2.0
-- **IMPLEMENTATION_SUMMARY.md** - Technical implementation details
-- **USER_GUIDE.md** - User manual
-- **QUICK_START.md** - 5-minute setup guide
+Railway memblokir port SMTP (587/465). Gunakan Resend:
+1. Tambahkan `RESEND_API_KEY` ke environment
+2. Set `EMAIL_FROM` ke `onboarding@resend.dev` (untuk testing)
 
----
+### CORS Error di Browser
 
-## 🆘 Support
+1. Pastikan `APP_ORIGIN` diset ke URL frontend yang benar
+2. Restart server setelah mengubah environment variable
 
-### Quick Checks
+### Magic Link: "Link expired or invalid"
 
-1. Check Railway logs: `railway logs --follow`
-2. Verify environment variables
-3. Test database connection
-4. Check Resend dashboard for email delivery
+- Link bersifat one-time use — minta link baru jika sudah dipakai
+- Link expired setelah 30 menit
+- Pastikan frontend menggunakan `useRef` untuk mencegah double-execution di React Strict Mode
 
-### Important URLs
+### Seeder Error: "Email already in use"
 
-- Backend: `https://your-app.railway.app`
-- Resend Dashboard: `https://resend.com/emails`
-- Prisma Studio: `http://localhost:5555`
+Seeder menggunakan `upsert` — aman dijalankan berulang kali, admin yang sudah ada akan di-skip.
 
 ---
 
-## 📊 Project Status
+## 🗺️ Roadmap
 
-- ✅ All features implemented
-- ✅ Security hardened
-- ✅ Performance optimized
-- ✅ Production ready
-- ✅ Fully documented
+Status saat ini: **MVP v3.0.0 selesai dan production-ready.**
 
-**Grade**: A (92/100)
+| Phase | Nama | Status | Estimasi |
+|-------|------|--------|----------|
+| 1 | MVP Foundation (Auth, Jobs, Applications, Gesture) | ✅ Complete | — |
+| 2 | Enhanced Security (2FA, audit logging, CSRF, security headers) | ⏳ Planned | 2–3 jam |
+| 3 | Automated Testing & CI/CD (Jest, Playwright, GitHub Actions) | ⏳ Planned | 3–4 jam |
+| 4 | Admin Dashboard & Analytics (kanban, bulk actions, CSV export) | ⏳ Planned | 3–4 jam |
+| 5 | Candidate Portal Enhancements (saved jobs, notifikasi, withdrawal) | ⏳ Planned | 2–3 jam |
+| 6 | Mobile Native Apps (React Native, push notifications, offline) | ⏳ Planned | 4–6 jam |
+| 7 | ATS Integration (Workday, Greenhouse, Lever, webhook sync) | ⏳ Planned | 3–4 jam |
+| 8 | AI-Powered Candidate Ranking (resume parsing, scoring) | ⏳ Planned | 4–5 jam |
+| 9 | Video Interview Integration (Zoom, recording, transcript) | ⏳ Planned | 3–4 jam |
+| 10 | Compliance & Data Privacy (GDPR, CCPA, data export/deletion) | ⏳ Planned | 2–3 jam |
+| 11 | Performance Optimization (Redis caching, N+1 elimination, Lighthouse >90) | ⏳ Planned | 2–3 jam |
+| 12 | Internationalization (5+ bahasa, RTL support) | ⏳ Planned | 2–3 jam |
+
+**Fitur yang sengaja tidak diimplementasikan di v3.0** (out-of-scope): real-time sync via WebSocket, ElasticSearch, email notifikasi saat status berubah, AI matching, bulk status update, custom pipeline stages, hiring analytics, candidate messaging, interview scheduling, dan employer branding.
 
 ---
 
-## 📞 Contact
-
-For issues or questions:
-1. Check documentation files
-2. Review error logs
-3. Test with Postman
-4. Check database with Prisma Studio
-
----
-
-**Happy Coding! 🚀**
+**GetJob Team — May 2026**
