@@ -28,6 +28,10 @@ const allowedOrigins = [
   "http://localhost:3001",
   "https://fe-hiring-platform.vercel.app",
   "https://hiring-platform.vercel.app",
+  "https://verfatics.my.id",
+  "https://server1.verfatics.my.id",
+  "http://verfatics.my.id",
+  "http://server1.verfatics.my.id",
 ];
 
 // Add APP_ORIGIN if it exists
@@ -53,6 +57,11 @@ app.use(
 
       // Allow any railway.app domain
       if (origin.endsWith('.railway.app')) {
+        return callback(null, true);
+      }
+
+      // Allow any verfatics.my.id subdomain
+      if (origin.endsWith('.verfatics.my.id') || origin === 'https://verfatics.my.id') {
         return callback(null, true);
       }
 
